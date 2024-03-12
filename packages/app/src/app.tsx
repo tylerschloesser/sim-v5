@@ -1,32 +1,27 @@
-import { useEffect, useRef } from 'react'
-import { BehaviorSubject } from 'rxjs'
+import { useEffect, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
 
+interface Vec2 {
+  x: number
+  y: number
+}
+
 export function App() {
   const ref = useRef<SVGSVGElement>(null)
+
+  const [viewport, setViewport] = useState<Vec2 | null>(
+    null,
+  )
 
   useEffect(() => {
     const controller = new AbortController()
     invariant(ref.current)
 
-    const viewport$ = new BehaviorSubject(
-      ref.current.getBoundingClientRect(),
-    )
-
-    const viewportSub = viewport$.subscribe((viewport) => {
-      if (ref.current) {
-        ref.current.setAttribute(
-          'viewBox',
-          `0 0 ${viewport.width} ${viewport.height}`,
-        )
-      }
-    })
-
     const ro = new ResizeObserver((entries) => {
       invariant(entries.length === 1)
-      const entry = entries.at(0)!
-      viewport$.next(entry.contentRect)
+      const { contentRect: rect } = entries.at(0)!
+      setViewport({ x: rect.width, y: rect.height })
     })
     ro.observe(ref.current)
 
@@ -37,13 +32,26 @@ export function App() {
     return () => {
       controller.abort()
       ro.disconnect()
-      viewportSub.unsubscribe()
     }
   }, [])
 
   return (
-    <svg ref={ref} className={styles.app}>
-      <circle cx="50" cy="50" r="10" fill="blue"></circle>
+    <svg
+      viewBox={
+        viewport
+          ? `0 0 ${viewport.x} ${viewport.y}`
+          : undefined
+      }
+      ref={ref}
+      className={styles.app}
+    >
+      {viewport && (
+        <g
+          transform={`translate(${viewport.x / 2} ${viewport.y / 2})`}
+        >
+          <circle cx="0" cy="0" r="10" fill="blue"></circle>
+        </g>
+      )}
     </svg>
   )
 }
