@@ -38,6 +38,10 @@ export function App() {
     }
   }, [])
 
+  const size = viewport
+    ? Math.min(viewport.x, viewport.y) / 10
+    : 0
+
   return (
     <svg
       viewBox={
@@ -53,13 +57,19 @@ export function App() {
           <g
             transform={`translate(${viewport.x / 2} ${viewport.y / 2})`}
           >
-            <circle cx="0" cy="0" r="10" fill="blue" />
+            <circle
+              cx="0"
+              cy="0"
+              r={size / 2}
+              fill="blue"
+            />
           </g>
           {pointer && (
             <circle
               cx={pointer.x}
               cy={pointer.y}
-              r="20"
+              r={size * 2}
+              fill="transparent"
               stroke="blue"
             />
           )}
