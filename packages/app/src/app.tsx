@@ -34,13 +34,16 @@ interface InitArgs {
 }
 
 function init({ svg, signal }: InitArgs): void {
-  console.log(svg)
+  // prettier-ignore
+  {
+    svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
+  }
 
-  svg.addEventListener(
-    'wheel',
-    (ev) => {
-      ev.preventDefault()
-    },
-    { passive: false, signal },
-  )
+  // prettier-ignore
+  {
+    const options: AddEventListenerOptions = { signal, passive: false }
+    svg.addEventListener('touchcancel', (ev) => { ev.preventDefault() }, options)
+    svg.addEventListener('touchend', (ev) => { ev.preventDefault() }, options)
+    svg.addEventListener('touchstart', (ev) => { ev.preventDefault() }, options)
+  }
 }
