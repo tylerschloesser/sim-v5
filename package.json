@@ -1,10 +1,37 @@
 {
   "name": "@sim-v5/root",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm start -w packages/app",
+    "build": "npm run build -w packages/app",
+    "deploy": "npm run deploy -w packages/cdk",
+    "test": "npm run test:prettier && npm run test:lint",
+    "test:prettier": "prettier --check . --log-level warn",
+    "test:lint": "eslint .",
+    "prepare": "husky",
+    "postinstall": "patch-package"
   },
+  "prettier": "@tyle/config/prettier.config.cjs",
   "workspaces": [
-    "packages/cdk",
-    "packages/app"
-  ]
+    "packages/app",
+    "packages/cdk"
+  ],
+  "dependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@tyle/config": "^1.0.0",
+    "@tyle/tsconfig": "^1.0.2",
+    "@types/lodash-es": "^4.17.12",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
+    "husky": "^9.0.11",
+    "lodash-es": "^4.17.21",
+    "patch-package": "^8.0.0",
+    "prando": "^6.0.1",
+    "prettier": "^3.2.5",
+    "tiny-invariant": "^1.3.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
+  }
 }
