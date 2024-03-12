@@ -1,4 +1,13 @@
 {
   "name": "@sim-v5/cdk",
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "deploy": "cdk deploy --all"
+  },
+  "dependencies": {
+    "@tyle/cdk": "^1.0.6",
+    "aws-cdk": "^2.130.0",
+    "aws-cdk-lib": "^2.130.0",
+    "construct": "^1.0.0"
+  }
 }
