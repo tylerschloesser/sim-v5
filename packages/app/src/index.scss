@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+  font-family: system-ui;
+  font-size: 16px;
+
+  background: var(--white);
+  color: var(--black);
+}
+
+:root {
+  --black: black;
+  --white: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --black: white;
+    --white: black;
+  }
+}
