@@ -6,8 +6,15 @@ export function App() {
   const ref = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
+    const controller = new AbortController()
     invariant(ref.current)
-    init(ref.current)
+    init({
+      svg: ref.current,
+      signal: controller.signal,
+    })
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   return (
@@ -21,6 +28,19 @@ export function App() {
   )
 }
 
-function init(svg: SVGSVGElement): void {
+interface InitArgs {
+  svg: SVGSVGElement
+  signal: AbortSignal
+}
+
+function init({ svg, signal }: InitArgs): void {
   console.log(svg)
+
+  svg.addEventListener(
+    'wheel',
+    (ev) => {
+      ev.preventDefault()
+    },
+    { passive: false, signal },
+  )
 }
