@@ -1,0 +1,6 @@
+{
+  "name": "@sim-v5/root",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
