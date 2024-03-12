@@ -14,6 +14,8 @@ export function App() {
     null,
   )
 
+  const [pointer, setPointer] = useState<Vec2 | null>(null)
+
   useEffect(() => {
     const controller = new AbortController()
     invariant(ref.current)
@@ -28,6 +30,7 @@ export function App() {
     init({
       svg: ref.current,
       signal: controller.signal,
+      setPointer,
     })
     return () => {
       controller.abort()
@@ -46,11 +49,21 @@ export function App() {
       className={styles.app}
     >
       {viewport && (
-        <g
-          transform={`translate(${viewport.x / 2} ${viewport.y / 2})`}
-        >
-          <circle cx="0" cy="0" r="10" fill="blue"></circle>
-        </g>
+        <>
+          <g
+            transform={`translate(${viewport.x / 2} ${viewport.y / 2})`}
+          >
+            <circle cx="0" cy="0" r="10" fill="blue" />
+          </g>
+          {pointer && (
+            <circle
+              cx={pointer.x}
+              cy={pointer.y}
+              r="20"
+              stroke="blue"
+            />
+          )}
+        </>
       )}
     </svg>
   )
@@ -59,13 +72,30 @@ export function App() {
 interface InitArgs {
   svg: SVGSVGElement
   signal: AbortSignal
+  setPointer(pointer: Vec2 | null): void
 }
 
-function init({ svg, signal }: InitArgs): void {
+function init({ svg, signal, setPointer }: InitArgs): void {
   // prettier-ignore
   {
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
+
+  svg.addEventListener(
+    'pointermove',
+    (ev) => {
+      setPointer({ x: ev.offsetX, y: ev.offsetY })
+    },
+    { signal },
+  )
+
+  svg.addEventListener(
+    'pointerleave',
+    () => {
+      setPointer(null)
+    },
+    { signal },
+  )
 
   // prettier-ignore
   {
