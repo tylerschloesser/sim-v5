@@ -67,7 +67,8 @@ export function App() {
               mod(viewport.x / 2 - camera.x, size) - size,
               mod(viewport.y / 2 - camera.y, size) - size,
             )}
-            stroke="hsl(0, 0%, 20%)"
+            strokeWidth={2}
+            stroke="hsl(0, 0%, 10%)"
           >
             {mapGridLines(
               viewport,
@@ -89,6 +90,7 @@ export function App() {
             )}
           >
             <circle
+              transform={translate(camera.x, camera.y)}
               cx="0"
               cy="0"
               r={size / 2}
