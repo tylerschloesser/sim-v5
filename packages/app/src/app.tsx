@@ -49,6 +49,8 @@ export function App() {
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
+  console.log(mod(854 / 2, 85.4))
+
   return (
     <svg
       viewBox={
@@ -64,8 +66,8 @@ export function App() {
         <>
           <g
             transform={translate(
-              mod(-camera.x, size),
-              mod(-camera.y, size),
+              mod(viewport.x / 2 - camera.x, size) - size,
+              mod(viewport.y / 2 - camera.y, size) - size,
             )}
             stroke="hsl(0, 0%, 50%)"
           >
@@ -84,18 +86,16 @@ export function App() {
           </g>
           <g
             transform={translate(
-              viewport.x / 2,
-              viewport.y / 2,
+              viewport.x / 2 - camera.x,
+              viewport.y / 2 - camera.y,
             )}
           >
-            <g transform={translate(-camera.x, -camera.y)}>
-              <circle
-                cx="0"
-                cy="0"
-                r={size / 2}
-                fill="blue"
-              />
-            </g>
+            <circle
+              cx="0"
+              cy="0"
+              r={size / 2}
+              fill="blue"
+            />
           </g>
           {pointer && (
             <circle
@@ -127,8 +127,8 @@ function mapGridLines(
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
-  const rows = Math.ceil(viewport.y / size)
-  const cols = Math.ceil(viewport.x / size)
+  const rows = Math.ceil(viewport.y / size) + 1
+  const cols = Math.ceil(viewport.x / size) + 1
 
   let key = 0
 
