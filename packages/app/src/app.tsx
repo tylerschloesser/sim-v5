@@ -25,7 +25,7 @@ export function App() {
     const ro = new ResizeObserver((entries) => {
       invariant(entries.length === 1)
       const { contentRect: rect } = entries.at(0)!
-      setViewport({ x: rect.width, y: rect.height })
+      setViewport(new Vec2(rect.width, rect.height))
     })
     ro.observe(ref.current)
 
@@ -177,10 +177,9 @@ function init({
     const elapsed = (now - last) / 1000
     last = now
     if (velocity.x !== 0 || velocity.y !== 0) {
-      setCamera((camera) => ({
-        x: camera.x + velocity.x * elapsed,
-        y: camera.y + velocity.y * elapsed,
-      }))
+      setCamera((camera) =>
+        camera.add(velocity.mul(elapsed)),
+      )
     }
     handle = self.requestAnimationFrame(callback)
   }
@@ -192,8 +191,7 @@ function init({
   svg.addEventListener(
     'pointermove',
     (ev) => {
-      setPointer({ x: ev.offsetX, y: ev.offsetY })
-
+      setPointer(new Vec2(ev.offsetX, ev.offsetY))
       const prev = pointerEventCache.get(ev.pointerId)
       pointerEventCache.set(ev.pointerId, ev)
 
