@@ -49,8 +49,6 @@ export function App() {
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
-  console.log(mod(854 / 2, 85.4))
-
   return (
     <svg
       viewBox={
