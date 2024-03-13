@@ -174,7 +174,17 @@ function init({
   let velocity: Vec2 = { x: 0, y: 0 }
 
   let handle: number
+  let last = self.performance.now()
   function callback() {
+    const now = self.performance.now()
+    const elapsed = (now - last) / 1000
+    last = now
+    if (velocity.x !== 0 || velocity.y !== 0) {
+      setCamera((camera) => ({
+        x: camera.x + velocity.x * elapsed,
+        y: camera.y + velocity.y * elapsed,
+      }))
+    }
     handle = self.requestAnimationFrame(callback)
   }
   handle = self.requestAnimationFrame(callback)
@@ -193,10 +203,11 @@ function init({
       if (prev?.buttons && ev.buttons) {
         const dx = ev.offsetX - prev.offsetX
         const dy = ev.offsetY - prev.offsetY
-        setCamera((camera) => ({
-          x: camera.x + dx,
-          y: camera.y + dy,
-        }))
+        const scale = 10
+        velocity.x =
+          Math.sign(dx) * Math.abs(dx) ** 1.5 * scale
+        velocity.y =
+          Math.sign(dy) * Math.abs(dy) ** 1.5 * scale
       }
     },
     { signal },
@@ -205,6 +216,7 @@ function init({
   svg.addEventListener(
     'pointerleave',
     () => {
+      velocity.x = velocity.y = 0
       setPointer(null)
     },
     { signal },
