@@ -269,7 +269,7 @@ function mapCells(
   const result = new Array<JSX.Element>()
 
   for (const [key, value] of Object.entries(world.cells)) {
-    const match = key.match(/^(\d+)\.(\d+)$/)
+    const match = key.match(/^(-?\d+)\.(-?\d+)$/)
     invariant(match?.length === 3)
     const x = parseInt(match.at(1)!)
     const y = parseInt(match.at(2)!)
