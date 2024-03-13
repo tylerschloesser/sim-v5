@@ -2,11 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
 import { mod } from './math.js'
-
-interface Vec2 {
-  x: number
-  y: number
-}
+import { Vec2 } from './vec2.js'
 
 type PointerId = number
 const pointerEventCache = new Map<PointerId, PointerEvent>()
@@ -20,7 +16,7 @@ export function App() {
 
   const [pointer, setPointer] = useState<Vec2 | null>(null)
 
-  const [camera, setCamera] = useState<Vec2>({ x: 0, y: 0 })
+  const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
 
   useEffect(() => {
     const controller = new AbortController()
@@ -171,7 +167,8 @@ function init({
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
 
-  let velocity: Vec2 = { x: 0, y: 0 }
+  const acceleration: Vec2 = new Vec2(0, 0)
+  const velocity: Vec2 = new Vec2(0, 0)
 
   let handle: number
   let last = self.performance.now()
