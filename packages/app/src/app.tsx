@@ -67,7 +67,7 @@ export function App() {
               mod(viewport.x / 2 - camera.x, size) - size,
               mod(viewport.y / 2 - camera.y, size) - size,
             )}
-            stroke="hsl(0, 0%, 50%)"
+            stroke="hsl(0, 0%, 20%)"
           >
             {mapGridLines(
               viewport,
