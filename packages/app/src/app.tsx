@@ -1,3 +1,4 @@
+import { Composite, Engine } from 'matter-js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
@@ -20,6 +21,8 @@ export function App() {
   const world = useMemo(initWorld, [])
 
   useEffect(() => {
+    const engine = Engine.create()
+
     const controller = new AbortController()
     invariant(ref.current)
 
@@ -86,16 +89,18 @@ export function App() {
               viewport.y / 2 - camera.y,
             )}
           >
-            {mapCells(world, ({ id, x, y, color }) => (
-              <rect
-                key={id}
-                x={x * size}
-                y={y * size}
-                width={size}
-                height={size}
-                fill={color}
-              />
-            ))}
+            {Array.from(iterateCells(world)).map(
+              ({ id, x, y, color }) => (
+                <rect
+                  key={id}
+                  x={x * size}
+                  y={y * size}
+                  width={size}
+                  height={size}
+                  fill={color}
+                />
+              ),
+            )}
             <circle
               transform={translate(camera.x, camera.y)}
               cx="0"
@@ -257,17 +262,12 @@ function translate(x: number, y: number): string {
   return `translate(${x.toFixed(2)} ${y.toFixed(2)})`
 }
 
-function mapCells(
-  world: World,
-  cb: (args: {
-    id: string
-    x: number
-    y: number
-    color: string
-  }) => JSX.Element,
-): Array<JSX.Element> {
-  const result = new Array<JSX.Element>()
-
+function* iterateCells(world: World): Generator<{
+  id: string
+  x: number
+  y: number
+  color: string
+}> {
   for (const [key, value] of Object.entries(world.cells)) {
     const match = key.match(/^(-?\d+)\.(-?\d+)$/)
     invariant(match?.length === 3)
@@ -275,8 +275,6 @@ function mapCells(
     const y = parseInt(match.at(2)!)
     const color = value
     const id = key
-    result.push(cb({ id, x, y, color }))
+    yield { id, x, y, color }
   }
-
-  return result
 }
