@@ -171,6 +171,17 @@ function init({
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
 
+  let velocity: Vec2 = { x: 0, y: 0 }
+
+  let handle: number
+  function callback() {
+    handle = self.requestAnimationFrame(callback)
+  }
+  handle = self.requestAnimationFrame(callback)
+  signal.addEventListener('abort', () => {
+    self.cancelAnimationFrame(handle)
+  })
+
   svg.addEventListener(
     'pointermove',
     (ev) => {
@@ -180,8 +191,8 @@ function init({
       pointerEventCache.set(ev.pointerId, ev)
 
       if (prev?.buttons && ev.buttons) {
-        const dx = -(ev.offsetX - prev.offsetX)
-        const dy = -(ev.offsetY - prev.offsetY)
+        const dx = ev.offsetX - prev.offsetX
+        const dy = ev.offsetY - prev.offsetY
         setCamera((camera) => ({
           x: camera.x + dx,
           y: camera.y + dy,

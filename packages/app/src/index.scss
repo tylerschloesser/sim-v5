@@ -8,13 +8,13 @@ body {
 }
 
 :root {
-  --black: black;
-  --white: white;
+  --black: hsl(0, 0%, 0%);
+  --white: hsl(0, 100%, 100%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --black: white;
-    --white: black;
+    --black: var(--white);
+    --white: var(--black);
   }
 }
