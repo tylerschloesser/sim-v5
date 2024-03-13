@@ -1,4 +1,11 @@
-import { Composite, Engine } from 'matter-js'
+import {
+  Bodies,
+  Body,
+  Composite,
+  Engine,
+  Events,
+  Runner,
+} from 'matter-js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
@@ -21,7 +28,37 @@ export function App() {
   const world = useMemo(initWorld, [])
 
   useEffect(() => {
-    const engine = Engine.create()
+    const engine = Engine.create({
+      gravity: new Vec2(0, 0),
+    })
+
+    Composite.add(
+      engine.world,
+      Array.from(iterateCells(world)).map(({ x, y }) =>
+        Bodies.rectangle(x, y, 1, 1, { isStatic: true }),
+      ),
+    )
+
+    const player = Bodies.circle(0, 0, 1)
+    Composite.add(engine.world, player)
+
+    Events.on(engine, 'afterUpdate', () => {
+      setCamera((prev) => {
+        if (
+          prev.x !== player.position.x ||
+          prev.y !== player.position.y
+        ) {
+          return new Vec2(
+            player.position.x,
+            player.position.y,
+          )
+        }
+        return prev
+      })
+    })
+
+    const runner = Runner.create()
+    Runner.start(runner, engine)
 
     const controller = new AbortController()
     invariant(ref.current)
@@ -38,10 +75,13 @@ export function App() {
       signal: controller.signal,
       setPointer,
       setCamera,
+      player,
     })
     return () => {
       controller.abort()
       ro.disconnect()
+
+      Runner.stop(runner)
     }
   }, [])
 
@@ -164,6 +204,7 @@ interface InitArgs {
   signal: AbortSignal
   setPointer(pointer: Vec2 | null): void
   setCamera(cb: (prev: Vec2) => Vec2): void
+  player: Body
 }
 
 function init({
@@ -171,43 +212,12 @@ function init({
   signal,
   setPointer,
   setCamera,
+  player,
 }: InitArgs): void {
   // prettier-ignore
   {
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
-
-  let friction = 0
-  let velocity: Vec2 = new Vec2(0, 0)
-
-  let handle: number
-  let last = self.performance.now()
-  function callback() {
-    const now = self.performance.now()
-    const elapsed = (now - last) / 1000
-    last = now
-    const speed = velocity.len()
-    if (speed > 0 && speed < Number.EPSILON) {
-      velocity.x = 0
-      velocity.y = 0
-      friction = 0
-    } else if (speed > 0) {
-      if (friction) {
-        invariant(friction > 0)
-        invariant(friction <= 1)
-        velocity = velocity.sub(velocity.mul(1 - friction))
-      }
-
-      setCamera((camera) =>
-        camera.add(velocity.mul(elapsed)),
-      )
-    }
-    handle = self.requestAnimationFrame(callback)
-  }
-  handle = self.requestAnimationFrame(callback)
-  signal.addEventListener('abort', () => {
-    self.cancelAnimationFrame(handle)
-  })
 
   svg.addEventListener(
     'pointermove',
@@ -221,14 +231,12 @@ function init({
         const dy = ev.offsetY - prev.offsetY
         const dt = ev.timeStamp - prev.timeStamp
 
-        friction = 0
-        const scale = 200
-        velocity.x =
-          ((Math.sign(dx) * Math.abs(dx) ** 1.5) / dt) *
-          scale
-        velocity.y =
-          ((Math.sign(dy) * Math.abs(dy) ** 1.5) / dt) *
-          scale
+        const scale = 1
+        const vx =
+          ((Math.sign(dx) * Math.abs(dx) ** 1) / dt) * scale
+        const vy =
+          ((Math.sign(dy) * Math.abs(dy) ** 1) / dt) * scale
+        Body.setVelocity(player, new Vec2(vx, vy))
       }
     },
     { signal },
@@ -237,7 +245,6 @@ function init({
   svg.addEventListener(
     'pointerup',
     () => {
-      friction = 0.8
       setPointer(null)
     },
     { signal },
