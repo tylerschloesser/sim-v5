@@ -32,15 +32,21 @@ export function App() {
       gravity: new Vec2(0, 0),
     })
 
-    Composite.add(
-      engine.world,
-      Array.from(iterateCells(world)).map(({ x, y }) =>
-        Bodies.rectangle(x, y, 1, 1, { isStatic: true }),
-      ),
-    )
+    const player = Bodies.circle(0, 0, 0.5, {
+      frictionAir: 0.05,
+      friction: 0,
+    })
 
-    const player = Bodies.circle(0, 0, 1)
-    Composite.add(engine.world, player)
+    Composite.add(engine.world, [
+      // ...Array.from(iterateCells(world)).map(({ x, y }) =>
+      //   Bodies.rectangle(x, y, 1, 1, { isStatic: true }),
+      // ),
+      Bodies.rectangle(0 + 0.5, -5 + 0.5, 10, 1, {
+        isStatic: true,
+        friction: 0,
+      }),
+      player,
+    ])
 
     Events.on(engine, 'afterUpdate', () => {
       setCamera((prev) => {
@@ -55,6 +61,10 @@ export function App() {
         }
         return prev
       })
+    })
+
+    Events.on(engine, 'collisionStart', () => {
+      console.log('collision')
     })
 
     const runner = Runner.create()
@@ -141,7 +151,10 @@ export function App() {
               ),
             )}
             <circle
-              transform={translate(camera.x, camera.y)}
+              transform={translate(
+                camera.x * size,
+                camera.y * size,
+              )}
               cx="0"
               cy="0"
               r={size / 2}
@@ -231,7 +244,7 @@ function init({
         const dy = ev.offsetY - prev.offsetY
         const dt = ev.timeStamp - prev.timeStamp
 
-        const scale = 1
+        const scale = 1 / 10
         const vx =
           ((Math.sign(dx) * Math.abs(dx) ** 1) / dt) * scale
         const vy =
