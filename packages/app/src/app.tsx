@@ -70,9 +70,8 @@ export function App() {
             strokeWidth={2}
             stroke="hsl(0, 0%, 10%)"
           >
-            {mapGridLines(
-              viewport,
-              (key, x1, y1, x2, y2) => (
+            {Array.from(iterateGridLines(viewport)).map(
+              ({ key, x1, y1, x2, y2 }) => (
                 <line
                   key={key}
                   x1={x1.toFixed(2)}
@@ -125,16 +124,13 @@ export function App() {
   )
 }
 
-function mapGridLines(
-  viewport: Vec2,
-  cb: (
-    key: string,
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-  ) => JSX.Element,
-): Array<JSX.Element> {
+function* iterateGridLines(viewport: Vec2): Generator<{
+  key: string
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}> {
   const size = viewport
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
@@ -144,14 +140,13 @@ function mapGridLines(
 
   let key = 0
 
-  const lines = new Array<JSX.Element>()
-
   for (let row = 0; row <= rows; row++) {
     const x1 = 0
     const y1 = row * size
     const x2 = cols * size
     const y2 = y1
-    lines.push(cb(`${key++}`, x1, y1, x2, y2))
+    // prettier-ignore
+    yield { key: `${key++}`, x1, y1, x2, y2 }
   }
 
   for (let col = 0; col <= cols; col++) {
@@ -159,10 +154,9 @@ function mapGridLines(
     const y1 = 0
     const x2 = x1
     const y2 = rows * size
-    lines.push(cb(`${key++}`, x1, y1, x2, y2))
+    // prettier-ignore
+    yield { key: `${key++}`, x1, y1, x2, y2 }
   }
-
-  return lines
 }
 
 interface InitArgs {
