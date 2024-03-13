@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
+import { mod } from './math.js'
 
 interface Vec2 {
   x: number
   y: number
 }
+
+type PointerId = number
+const pointerEventCache = new Map<PointerId, PointerEvent>()
 
 export function App() {
   const ref = useRef<SVGSVGElement>(null)
@@ -15,6 +19,8 @@ export function App() {
   )
 
   const [pointer, setPointer] = useState<Vec2 | null>(null)
+
+  const [camera, setCamera] = useState<Vec2>({ x: 0, y: 0 })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -31,6 +37,7 @@ export function App() {
       svg: ref.current,
       signal: controller.signal,
       setPointer,
+      setCamera,
     })
     return () => {
       controller.abort()
@@ -57,16 +64,38 @@ export function App() {
         <>
           <g
             transform={translate(
+              mod(-camera.x, size),
+              mod(-camera.y, size),
+            )}
+            stroke="hsl(0, 0%, 50%)"
+          >
+            {mapGridLines(
+              viewport,
+              (key, x1, y1, x2, y2) => (
+                <line
+                  key={key}
+                  x1={x1.toFixed(2)}
+                  y1={y1.toFixed(2)}
+                  x2={x2.toFixed(2)}
+                  y2={y2.toFixed(2)}
+                />
+              ),
+            )}
+          </g>
+          <g
+            transform={translate(
               viewport.x / 2,
               viewport.y / 2,
             )}
           >
-            <circle
-              cx="0"
-              cy="0"
-              r={size / 2}
-              fill="blue"
-            />
+            <g transform={translate(-camera.x, -camera.y)}>
+              <circle
+                cx="0"
+                cy="0"
+                r={size / 2}
+                fill="blue"
+              />
+            </g>
           </g>
           {pointer && (
             <circle
@@ -78,26 +107,6 @@ export function App() {
               stroke="blue"
             />
           )}
-          <g
-            transform={translate(
-              (viewport.x % size) / 2,
-              (viewport.y % size) / 2,
-            )}
-          >
-            {mapGridLines(
-              viewport,
-              (key, x1, y1, x2, y2) => (
-                <line
-                  key={key}
-                  x1={x1.toFixed(2)}
-                  y1={y1.toFixed(2)}
-                  x2={x2.toFixed(2)}
-                  y2={y2.toFixed(2)}
-                  stroke="pink"
-                />
-              ),
-            )}
-          </g>
         </>
       )}
     </svg>
@@ -148,9 +157,15 @@ interface InitArgs {
   svg: SVGSVGElement
   signal: AbortSignal
   setPointer(pointer: Vec2 | null): void
+  setCamera(cb: (prev: Vec2) => Vec2): void
 }
 
-function init({ svg, signal, setPointer }: InitArgs): void {
+function init({
+  svg,
+  signal,
+  setPointer,
+  setCamera,
+}: InitArgs): void {
   // prettier-ignore
   {
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
@@ -160,6 +175,18 @@ function init({ svg, signal, setPointer }: InitArgs): void {
     'pointermove',
     (ev) => {
       setPointer({ x: ev.offsetX, y: ev.offsetY })
+
+      const prev = pointerEventCache.get(ev.pointerId)
+      pointerEventCache.set(ev.pointerId, ev)
+
+      if (prev?.buttons && ev.buttons) {
+        const dx = -(ev.offsetX - prev.offsetX)
+        const dy = -(ev.offsetY - prev.offsetY)
+        setCamera((camera) => ({
+          x: camera.x + dx,
+          y: camera.y + dy,
+        }))
+      }
     },
     { signal },
   )
