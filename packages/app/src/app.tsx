@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
 import { mod } from './math.js'
+import { World } from './types.js'
 import { Vec2 } from './vec2.js'
+import { initWorld } from './world.js'
 
 type PointerId = number
 const pointerEventCache = new Map<PointerId, PointerEvent>()
@@ -10,13 +12,12 @@ const pointerEventCache = new Map<PointerId, PointerEvent>()
 export function App() {
   const ref = useRef<SVGSVGElement>(null)
 
-  const [viewport, setViewport] = useState<Vec2 | null>(
-    null,
-  )
-
+  // prettier-ignore
+  const [viewport, setViewport] = useState<Vec2 | null>(null)
   const [pointer, setPointer] = useState<Vec2 | null>(null)
-
   const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
+
+  const world = useMemo(initWorld, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -85,6 +86,16 @@ export function App() {
               viewport.y / 2 - camera.y,
             )}
           >
+            {mapCells(world, ({ id, x, y, color }) => (
+              <rect
+                key={id}
+                x={x * size}
+                y={y * size}
+                width={size}
+                height={size}
+                fill={color}
+              />
+            ))}
             <circle
               transform={translate(camera.x, camera.y)}
               cx="0"
@@ -244,4 +255,28 @@ function init({
 
 function translate(x: number, y: number): string {
   return `translate(${x.toFixed(2)} ${y.toFixed(2)})`
+}
+
+function mapCells(
+  world: World,
+  cb: (args: {
+    id: string
+    x: number
+    y: number
+    color: string
+  }) => JSX.Element,
+): Array<JSX.Element> {
+  const result = new Array<JSX.Element>()
+
+  for (const [key, value] of Object.entries(world.cells)) {
+    const match = key.match(/^(\d+)\.(\d+)$/)
+    invariant(match?.length === 3)
+    const x = parseInt(match.at(1)!)
+    const y = parseInt(match.at(2)!)
+    const color = value
+    const id = key
+    result.push(cb({ id, x, y, color }))
+  }
+
+  return result
 }
