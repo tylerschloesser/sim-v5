@@ -32,31 +32,32 @@ export function App() {
       gravity: new Vec2(0, 0),
     })
 
-    const player = Bodies.circle(0, 0, 0.5, {
-      frictionAir: 0.05,
+    const playerBody = Bodies.rectangle(0, 0, 1, 1, {
+      frictionAir: 0.1,
+      slop: 0,
       friction: 0,
     })
 
     Composite.add(engine.world, [
-      // ...Array.from(iterateCells(world)).map(({ x, y }) =>
-      //   Bodies.rectangle(x, y, 1, 1, { isStatic: true }),
-      // ),
-      Bodies.rectangle(0 + 0.5, -5 + 0.5, 10, 1, {
-        isStatic: true,
-        friction: 0,
-      }),
-      player,
+      ...Array.from(iterateCells(world)).map(({ x, y }) =>
+        Bodies.rectangle(x + 0.5, y + 0.5, 1, 1, {
+          isStatic: true,
+          slop: 0,
+          friction: 0,
+        }),
+      ),
+      playerBody,
     ])
 
     Events.on(engine, 'afterUpdate', () => {
       setCamera((prev) => {
         if (
-          prev.x !== player.position.x ||
-          prev.y !== player.position.y
+          prev.x !== playerBody.position.x ||
+          prev.y !== playerBody.position.y
         ) {
           return new Vec2(
-            player.position.x,
-            player.position.y,
+            playerBody.position.x,
+            playerBody.position.y,
           )
         }
         return prev
@@ -85,7 +86,7 @@ export function App() {
       signal: controller.signal,
       setPointer,
       setCamera,
-      player,
+      playerBody,
     })
     return () => {
       controller.abort()
@@ -217,7 +218,7 @@ interface InitArgs {
   signal: AbortSignal
   setPointer(pointer: Vec2 | null): void
   setCamera(cb: (prev: Vec2) => Vec2): void
-  player: Body
+  playerBody: Body
 }
 
 function init({
@@ -225,7 +226,7 @@ function init({
   signal,
   setPointer,
   setCamera,
-  player,
+  playerBody,
 }: InitArgs): void {
   // prettier-ignore
   {
@@ -244,12 +245,12 @@ function init({
         const dy = ev.offsetY - prev.offsetY
         const dt = ev.timeStamp - prev.timeStamp
 
-        const scale = 1 / 10
+        const scale = 1 / 5
         const vx =
           ((Math.sign(dx) * Math.abs(dx) ** 1) / dt) * scale
         const vy =
           ((Math.sign(dy) * Math.abs(dy) ** 1) / dt) * scale
-        Body.setVelocity(player, new Vec2(vx, vy))
+        Body.setVelocity(playerBody, new Vec2(vx, vy))
       }
     },
     { signal },
