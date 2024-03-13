@@ -167,8 +167,8 @@ function init({
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
 
-  const acceleration: Vec2 = new Vec2(0, 0)
-  const velocity: Vec2 = new Vec2(0, 0)
+  let friction = 0
+  let velocity: Vec2 = new Vec2(0, 0)
 
   let handle: number
   let last = self.performance.now()
@@ -176,7 +176,18 @@ function init({
     const now = self.performance.now()
     const elapsed = (now - last) / 1000
     last = now
-    if (velocity.x !== 0 || velocity.y !== 0) {
+    const speed = velocity.len()
+    if (speed > 0 && speed < Number.EPSILON) {
+      velocity.x = 0
+      velocity.y = 0
+      friction = 0
+    } else if (speed > 0) {
+      if (friction) {
+        invariant(friction > 0)
+        invariant(friction <= 1)
+        velocity = velocity.sub(velocity.mul(1 - friction))
+      }
+
       setCamera((camera) =>
         camera.add(velocity.mul(elapsed)),
       )
@@ -198,20 +209,25 @@ function init({
       if (prev?.buttons && ev.buttons) {
         const dx = ev.offsetX - prev.offsetX
         const dy = ev.offsetY - prev.offsetY
-        const scale = 10
+        const dt = ev.timeStamp - prev.timeStamp
+
+        friction = 0
+        const scale = 200
         velocity.x =
-          Math.sign(dx) * Math.abs(dx) ** 1.5 * scale
+          ((Math.sign(dx) * Math.abs(dx) ** 1.5) / dt) *
+          scale
         velocity.y =
-          Math.sign(dy) * Math.abs(dy) ** 1.5 * scale
+          ((Math.sign(dy) * Math.abs(dy) ** 1.5) / dt) *
+          scale
       }
     },
     { signal },
   )
 
   svg.addEventListener(
-    'pointerleave',
+    'pointerup',
     () => {
-      velocity.x = velocity.y = 0
+      friction = 0.8
       setPointer(null)
     },
     { signal },
