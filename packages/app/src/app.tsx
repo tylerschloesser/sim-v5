@@ -44,62 +44,7 @@ export function App() {
 
   const svg = useRef<SVGSVGElement>(null)
 
-  useEffect(() => {
-    const engine = Engine.create({
-      gravity: new Vec2(0, 0),
-    })
-
-    Composite.add(engine.world, [
-      ...Array.from(iterateCells(world))
-        .filter(({ type }) => type === CellType.enum.Stone)
-        .map(({ x, y }) =>
-          Bodies.rectangle(x + 0.5, y + 0.5, 1, 1, {
-            isStatic: true,
-            slop: 0,
-            friction: 0,
-          }),
-        ),
-      playerBody,
-    ])
-
-    Events.on(engine, 'afterUpdate', () => {
-      setPlayer((prev) => {
-        if (
-          prev.x !== playerBody.position.x ||
-          prev.y !== playerBody.position.y
-        ) {
-          return new Vec2(
-            playerBody.position.x,
-            playerBody.position.y,
-          )
-        }
-        return prev
-      })
-      setCamera((prev) => {
-        if (
-          prev.x !== playerBody.position.x ||
-          prev.y !== playerBody.position.y
-        ) {
-          return new Vec2(
-            playerBody.position.x,
-            playerBody.position.y,
-          )
-        }
-        return prev
-      })
-    })
-
-    Events.on(engine, 'collisionStart', () => {
-      console.log('collision')
-    })
-
-    const runner = Runner.create()
-    Runner.start(runner, engine)
-
-    return () => {
-      Runner.stop(runner)
-    }
-  }, [])
+  usePhysics(world, playerBody, setPlayer, setCamera)
 
   useResize(svg, setViewport)
   usePreventDefaults(svg)
@@ -320,6 +265,70 @@ function usePreventDefaults(
     }
     return () => {
       controller.abort()
+    }
+  }, [])
+}
+
+function usePhysics(
+  world: World,
+  playerBody: Body,
+  setPlayer: (cb: (prev: Vec2) => Vec2) => void,
+  setCamera: (cb: (prev: Vec2) => Vec2) => void,
+): void {
+  useEffect(() => {
+    const engine = Engine.create({
+      gravity: new Vec2(0, 0),
+    })
+
+    Composite.add(engine.world, [
+      ...Array.from(iterateCells(world))
+        .filter(({ type }) => type === CellType.enum.Stone)
+        .map(({ x, y }) =>
+          Bodies.rectangle(x + 0.5, y + 0.5, 1, 1, {
+            isStatic: true,
+            slop: 0,
+            friction: 0,
+          }),
+        ),
+      playerBody,
+    ])
+
+    Events.on(engine, 'afterUpdate', () => {
+      setPlayer((prev) => {
+        if (
+          prev.x !== playerBody.position.x ||
+          prev.y !== playerBody.position.y
+        ) {
+          return new Vec2(
+            playerBody.position.x,
+            playerBody.position.y,
+          )
+        }
+        return prev
+      })
+      setCamera((prev) => {
+        if (
+          prev.x !== playerBody.position.x ||
+          prev.y !== playerBody.position.y
+        ) {
+          return new Vec2(
+            playerBody.position.x,
+            playerBody.position.y,
+          )
+        }
+        return prev
+      })
+    })
+
+    Events.on(engine, 'collisionStart', () => {
+      console.log('collision')
+    })
+
+    const runner = Runner.create()
+    Runner.start(runner, engine)
+
+    return () => {
+      Runner.stop(runner)
     }
   }, [])
 }
