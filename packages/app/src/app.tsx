@@ -29,10 +29,10 @@ export function App() {
 
   const scale = viewport
     ? Math.min(viewport.x, viewport.y) / 10
-    : 0
+    : null
 
   useEffect(() => {
-    if (scale === 0) {
+    if (scale === null) {
       return
     }
     const start = drag?.events.at(0)?.position
@@ -84,7 +84,7 @@ export function App() {
       data-scale={scale}
       {...handlers}
     >
-      {viewport && (
+      {viewport && scale && (
         <>
           <RenderGrid
             viewport={viewport}
