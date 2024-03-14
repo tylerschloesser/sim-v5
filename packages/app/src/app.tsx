@@ -46,15 +46,19 @@ export function App() {
     setVelocity(dir)
   }, [drag, scale])
 
-  const lastStep = useRef(0)
+  const lastStep = useRef<number | null>(null)
   useEffect(() => {
     if (velocity.len() === 0) {
+      lastStep.current = null
       return
     }
+    if (lastStep.current === null) {
+      lastStep.current = self.performance.now()
+    }
     let handle: number
-    lastStep.current = self.performance.now()
     function step() {
       const now = self.performance.now()
+      invariant(lastStep.current !== null)
       const elapsed = (now - lastStep.current) / 1000
       lastStep.current = now
       setPlayer((prev) => prev.add(velocity.mul(elapsed)))
@@ -282,13 +286,41 @@ function RenderWorld({
           />
         ),
       )}
-      <g
-        transform={translate(
-          player.x * scale,
-          player.y * scale,
+      <g>
+        <circle
+          transform={translate(
+            player.x * scale,
+            player.y * scale,
+          )}
+          x={0}
+          y={0}
+          r={scale / 2}
+          fill="blue"
+        />
+        {velocity.len() !== 0 && (
+          <g stroke="red" fill="transparent">
+            <line
+              transform={translate(
+                player.x * scale,
+                player.y * scale,
+              )}
+              x1={0}
+              y1={0}
+              x2={velocity.x * scale}
+              y2={velocity.y * scale}
+            />
+            <rect
+              transform={translate(
+                Math.floor(player.x + velocity.x) * scale,
+                Math.floor(player.y + velocity.y) * scale,
+              )}
+              x={0}
+              y={0}
+              width={scale}
+              height={scale}
+            />
+          </g>
         )}
-      >
-        <circle x={0} y={0} r={scale / 2} fill="blue" />
       </g>
     </g>
   )
