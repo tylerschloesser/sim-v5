@@ -39,7 +39,16 @@ function useVelocity(
   return velocity
 }
 
-function usePlayer(velocity: Vec2): Vec2 {
+function move(
+  position: Vec2,
+  velocity: Vec2,
+  elapsed: number,
+  world: World,
+): Vec2 {
+  return position.add(velocity.mul(elapsed))
+}
+
+function usePlayer(velocity: Vec2, world: World): Vec2 {
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
@@ -56,7 +65,9 @@ function usePlayer(velocity: Vec2): Vec2 {
       invariant(lastStep.current !== null)
       const elapsed = (now - lastStep.current) / 1000
       lastStep.current = now
-      setPlayer((prev) => prev.add(velocity.mul(elapsed)))
+      setPlayer((prev) =>
+        move(prev, velocity, elapsed, world),
+      )
       handle = self.requestAnimationFrame(step)
     }
     handle = self.requestAnimationFrame(step)
@@ -75,11 +86,11 @@ export function App() {
     ? Math.min(viewport.x, viewport.y) / 10
     : null
 
+  const world = useMemo(initWorld, [])
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
-  const player = usePlayer(velocity)
+  const player = usePlayer(velocity, world)
   const camera = player
-  const world = useMemo(initWorld, [])
   const svg = useRef<SVGSVGElement>(null)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
