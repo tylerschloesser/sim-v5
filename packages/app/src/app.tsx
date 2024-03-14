@@ -346,7 +346,7 @@ function useMemoizedTranslate(
   return translate.current
 }
 
-const SmoothRect = function SmoothRect({
+function SmoothRect({
   scale,
   x,
   y,
