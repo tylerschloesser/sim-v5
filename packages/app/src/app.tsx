@@ -356,7 +356,9 @@ function SmoothRect({
 
         const dir = translate.sub(prev)
 
-        let velocity = dir.norm().mul(scale * 10)
+        const speed = (dir.len() * 0.25 + 1) ** 1.25 - 1
+
+        let velocity = dir.norm().mul(scale * speed)
         if (velocity.len() * elapsed >= dir.len()) {
           return translate
         }
