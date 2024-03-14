@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import styles from './app.module.scss'
 import { mod } from './math.js'
-import { World } from './types.js'
+import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
@@ -44,18 +44,32 @@ export function App() {
     })
 
     Composite.add(engine.world, [
-      ...Array.from(iterateCells(world)).map(({ x, y }) =>
-        Bodies.rectangle(x + 0.5, y + 0.5, 1, 1, {
-          isStatic: true,
-          slop: 0,
-          friction: 0,
-        }),
-      ),
+      ...Array.from(iterateCells(world))
+        .filter(({ type }) => type === CellType.enum.Stone)
+        .map(({ x, y }) =>
+          Bodies.rectangle(x + 0.5, y + 0.5, 1, 1, {
+            isStatic: true,
+            slop: 0,
+            friction: 0,
+          }),
+        ),
       playerBody,
     ])
 
     Events.on(engine, 'afterUpdate', () => {
       setPlayer((prev) => {
+        if (
+          prev.x !== playerBody.position.x ||
+          prev.y !== playerBody.position.y
+        ) {
+          return new Vec2(
+            playerBody.position.x,
+            playerBody.position.y,
+          )
+        }
+        return prev
+      })
+      setCamera((prev) => {
         if (
           prev.x !== playerBody.position.x ||
           prev.y !== playerBody.position.y
@@ -90,7 +104,6 @@ export function App() {
       root: refs.current.root,
       signal: controller.signal,
       setPointer,
-      setCamera,
       playerBody,
     })
     return () => {
@@ -121,8 +134,10 @@ export function App() {
           <g
             ref={(ref) => (refs.current.grid = ref)}
             transform={translate(
-              mod(viewport.x / 2 - camera.x, size) - size,
-              mod(viewport.y / 2 - camera.y, size) - size,
+              mod(viewport.x / 2 - camera.x * size, size) -
+                size,
+              mod(viewport.y / 2 - camera.y * size, size) -
+                size,
             )}
             strokeWidth={2}
             stroke="hsl(0, 0%, 10%)"
@@ -142,8 +157,8 @@ export function App() {
           <g
             ref={(ref) => (refs.current.world = ref)}
             transform={translate(
-              viewport.x / 2 - camera.x,
-              viewport.y / 2 - camera.y,
+              viewport.x / 2 - camera.x * size,
+              viewport.y / 2 - camera.y * size,
             )}
           >
             {Array.from(iterateCells(world)).map(
@@ -230,7 +245,6 @@ interface InitArgs {
   root: SVGSVGElement
   signal: AbortSignal
   setPointer(pointer: Vec2 | null): void
-  setCamera(cb: (prev: Vec2) => Vec2): void
   playerBody: Body
 }
 
@@ -238,7 +252,6 @@ function init({
   root,
   signal,
   setPointer,
-  setCamera,
   playerBody,
 }: InitArgs): void {
   // prettier-ignore
@@ -290,6 +303,7 @@ function translate(x: number, y: number): string {
 
 function* iterateCells(world: World): Generator<{
   id: string
+  type: CellType
   x: number
   y: number
   color: string
@@ -299,8 +313,8 @@ function* iterateCells(world: World): Generator<{
     invariant(match?.length === 3)
     const x = parseInt(match.at(1)!)
     const y = parseInt(match.at(2)!)
-    const color = value
+    const { color, type } = value
     const id = key
-    yield { id, x, y, color }
+    yield { id, type, x, y, color }
   }
 }
