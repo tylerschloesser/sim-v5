@@ -17,7 +17,6 @@ import { initWorld } from './world.js'
 const SHOW_GRID: boolean = false
 
 type PointerId = number
-const pointerEventCache = new Map<PointerId, PointerEvent>()
 
 export function App() {
   // prettier-ignore
@@ -26,6 +25,21 @@ export function App() {
   const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
 
+  const pointerEventCache = useMemo(
+    () => new Map<PointerId, React.PointerEvent>(),
+    [],
+  )
+
+  const playerBody = useMemo(
+    () =>
+      Bodies.circle(0, 0, 0.5, {
+        frictionAir: 0.1,
+        slop: 0,
+        friction: 0,
+      }),
+    [],
+  )
+
   const world = useMemo(initWorld, [])
 
   const svg = useRef<SVGSVGElement>(null)
@@ -33,12 +47,6 @@ export function App() {
   useEffect(() => {
     const engine = Engine.create({
       gravity: new Vec2(0, 0),
-    })
-
-    const playerBody = Bodies.circle(0, 0, 0.5, {
-      frictionAir: 0.1,
-      slop: 0,
-      friction: 0,
     })
 
     Composite.add(engine.world, [
@@ -102,7 +110,6 @@ export function App() {
       svg: svg.current,
       signal: controller.signal,
       setPointer,
-      playerBody,
     })
     return () => {
       controller.abort()
@@ -126,6 +133,28 @@ export function App() {
       }
       className={styles.app}
       data-size={size}
+      onPointerMove={(ev) => {
+        setPointer(new Vec2(ev.clientX, ev.clientY))
+        const prev = pointerEventCache.get(ev.pointerId)
+        pointerEventCache.set(ev.pointerId, ev)
+
+        if (prev?.buttons && ev.buttons) {
+          const dx = ev.clientX - prev.clientX
+          const dy = ev.clientY - prev.clientY
+          const dt = ev.timeStamp - prev.timeStamp
+
+          const d = new Vec2(dx, dy)
+          const speed = d.len()
+
+          const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
+
+          console.log(speed, scale)
+
+          const vx = (dx / dt) * scale
+          const vy = (dy / dt) * scale
+          Body.setVelocity(playerBody, new Vec2(vx, vy))
+        }
+      }}
     >
       {viewport && (
         <>
@@ -242,46 +271,13 @@ interface InitArgs {
   svg: SVGSVGElement
   signal: AbortSignal
   setPointer(pointer: Vec2 | null): void
-  playerBody: Body
 }
 
-function init({
-  svg,
-  signal,
-  setPointer,
-  playerBody,
-}: InitArgs): void {
+function init({ svg, signal, setPointer }: InitArgs): void {
   // prettier-ignore
   {
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
-
-  svg.addEventListener(
-    'pointermove',
-    (ev) => {
-      setPointer(new Vec2(ev.offsetX, ev.offsetY))
-      const prev = pointerEventCache.get(ev.pointerId)
-      pointerEventCache.set(ev.pointerId, ev)
-
-      if (prev?.buttons && ev.buttons) {
-        const dx = ev.offsetX - prev.offsetX
-        const dy = ev.offsetY - prev.offsetY
-        const dt = ev.timeStamp - prev.timeStamp
-
-        const d = new Vec2(dx, dy)
-        const speed = d.len()
-
-        const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
-
-        console.log(speed, scale)
-
-        const vx = (dx / dt) * scale
-        const vy = (dy / dt) * scale
-        Body.setVelocity(playerBody, new Vec2(vx, vy))
-      }
-    },
-    { signal },
-  )
 
   svg.addEventListener(
     'pointerup',
