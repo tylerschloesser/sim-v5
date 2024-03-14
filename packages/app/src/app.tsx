@@ -78,8 +78,6 @@ export function App() {
 
           const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
 
-          console.log(speed, scale)
-
           const vx = (dx / dt) * scale
           const vy = (dy / dt) * scale
           Body.setVelocity(playerBody, new Vec2(vx, vy))
