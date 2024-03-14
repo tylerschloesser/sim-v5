@@ -32,7 +32,7 @@ export function App() {
 
   const playerBody = useMemo(
     () =>
-      Bodies.circle(0, 0, 0.5, {
+      Bodies.rectangle(0, 0, 1, 1, {
         frictionAir: 0.1,
         slop: 0,
         friction: 0,
@@ -345,14 +345,15 @@ function RenderWorld({
           />
         ),
       )}
-      <circle
+      <rect
         transform={translate(
           player.x * size,
           player.y * size,
         )}
-        cx="0"
-        cy="0"
-        r={size / 2}
+        x={-0.5 * size}
+        y={-0.5 * size}
+        width={size}
+        height={size}
         fill="blue"
       />
     </g>
