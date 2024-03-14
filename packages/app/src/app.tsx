@@ -14,7 +14,7 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
-const SHOW_GRID: boolean = false
+const SHOW_GRID: boolean = true
 
 type PointerId = number
 
@@ -89,29 +89,11 @@ export function App() {
     >
       {viewport && (
         <>
-          <g
-            visibility={SHOW_GRID ? undefined : 'hidden'}
-            transform={translate(
-              mod(viewport.x / 2 - camera.x * size, size) -
-                size,
-              mod(viewport.y / 2 - camera.y * size, size) -
-                size,
-            )}
-            strokeWidth={2}
-            stroke="hsl(0, 0%, 10%)"
-          >
-            {Array.from(iterateGridLines(viewport)).map(
-              ({ key, x1, y1, x2, y2 }) => (
-                <line
-                  key={key}
-                  x1={x1.toFixed(2)}
-                  y1={y1.toFixed(2)}
-                  x2={x2.toFixed(2)}
-                  y2={y2.toFixed(2)}
-                />
-              ),
-            )}
-          </g>
+          <RenderGrid
+            viewport={viewport}
+            camera={camera}
+            size={size}
+          />
           <g
             transform={translate(
               viewport.x / 2 - camera.x * size,
@@ -330,4 +312,39 @@ function usePhysics(
       Runner.stop(runner)
     }
   }, deps)
+}
+
+interface RenderGridProps {
+  viewport: Vec2
+  camera: Vec2
+  size: number
+}
+function RenderGrid({
+  viewport,
+  camera,
+  size,
+}: RenderGridProps) {
+  return (
+    <g
+      visibility={SHOW_GRID ? undefined : 'hidden'}
+      transform={translate(
+        mod(viewport.x / 2 - camera.x * size, size) - size,
+        mod(viewport.y / 2 - camera.y * size, size) - size,
+      )}
+      strokeWidth={2}
+      stroke="hsl(0, 0%, 10%)"
+    >
+      {Array.from(iterateGridLines(viewport)).map(
+        ({ key, x1, y1, x2, y2 }) => (
+          <line
+            key={key}
+            x1={x1.toFixed(2)}
+            y1={y1.toFixed(2)}
+            x2={x2.toFixed(2)}
+            y2={y2.toFixed(2)}
+          />
+        ),
+      )}
+    </g>
+  )
 }
