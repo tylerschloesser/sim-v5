@@ -274,7 +274,13 @@ function init({
         const dy = ev.offsetY - prev.offsetY
         const dt = ev.timeStamp - prev.timeStamp
 
-        const scale = 1 / 10
+        const d = new Vec2(dx, dy)
+        const speed = d.len()
+
+        const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
+
+        console.log(speed, scale)
+
         const vx = (dx / dt) * scale
         const vy = (dy / dt) * scale
         Body.setVelocity(playerBody, new Vec2(vx, vy))

@@ -22,4 +22,9 @@ export class Vec2 {
   len(): number {
     return Math.sqrt(this.x ** 2 + this.y ** 2)
   }
+
+  norm(): Vec2 {
+    const len = this.len()
+    return new Vec2(this.x / len, this.y / len)
+  }
 }
