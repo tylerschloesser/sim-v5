@@ -19,6 +19,10 @@ export class Vec2 {
     return new Vec2(this.x * s, this.y * s)
   }
 
+  div(s: number): Vec2 {
+    return new Vec2(this.x / s, this.y / s)
+  }
+
   len(): number {
     return Math.sqrt(this.x ** 2 + this.y ** 2)
   }

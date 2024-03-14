@@ -27,17 +27,22 @@ export function App() {
   // prettier-ignore
   const velocity  = useRef<Vec2>(new Vec2(0, 0))
 
+  const scale = viewport
+    ? Math.min(viewport.x, viewport.y) / 10
+    : 0
+
   useEffect(() => {
     const start = drag?.events.at(0)?.position
     let end = drag?.events.at(-1)?.position
     if (end === start) {
       end = undefined
     }
-    const dir =
+    const dir = (
       start && end ? end.sub(start) : new Vec2(0, 0)
+    ).div(scale)
     velocity.current.x = dir.x
     velocity.current.y = dir.y
-  }, [drag])
+  }, [drag, scale])
 
   useEffect(() => {
     let handle: number
@@ -65,10 +70,6 @@ export function App() {
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
-
-  const scale = viewport
-    ? Math.min(viewport.x, viewport.y) / 10
-    : 0
 
   const viewBox = viewport
     ? `0 0 ${viewport.x} ${viewport.y}`
