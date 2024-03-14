@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import styles from './app.module.scss'
@@ -330,14 +335,27 @@ interface SmoothRectProps {
   width: number
   height: number
 }
-function SmoothRect({
+
+function useMemoizedTranslate(
+  props: Pick<SmoothRectProps, 'translate'>,
+): Vec2 {
+  const translate = useRef<Vec2>(props.translate)
+  if (!translate.current.equals(props.translate)) {
+    translate.current = props.translate
+  }
+  return translate.current
+}
+
+const SmoothRect = function SmoothRect({
   scale,
-  translate,
   x,
   y,
   width,
   height,
+  ...props
 }: SmoothRectProps) {
+  // memoize translate to simplify the effect below
+  const translate = useMemoizedTranslate(props)
   const [current, setCurrent] = useState(translate)
 
   const lastStep = useRef<number>(self.performance.now())
@@ -355,14 +373,20 @@ function SmoothRect({
 
         const dir = translate.sub(prev)
 
-        const speed = (dir.len() * 0.25 + 1) ** 1.25 - 1
+        const speed = Math.max(
+          (dir.len() * 0.25 + 1) ** 1.25 - 1,
+          // need some min speed threshold so that we eventually stop
+          1e-6,
+        )
 
         let velocity = dir.norm().mul(scale * speed)
-        if (velocity.len() * elapsed >= dir.len()) {
+        const delta = velocity.mul(elapsed)
+
+        if (delta.len() >= dir.len()) {
           return translate
         }
 
-        return prev.add(velocity.mul(elapsed))
+        return prev.add(delta)
       })
       handle = self.requestAnimationFrame(step)
     }
@@ -421,14 +445,14 @@ function RenderDrag({ drag, scale }: RenderPointerProps) {
         <g
           stroke="red"
           fill="transparent"
-          transform="translate(100 100)"
+          transform={`translate(${scale} ${scale})`}
         >
-          <circle cx={0} cy={0} r={25} />
+          <circle cx={0} cy={0} r={scale / 2} />
           <circle
             cx={0}
             cy={0}
-            transform={`rotate(${angle}) translate(25 0)`}
-            r={5}
+            transform={`rotate(${angle}) translate(${scale / 2 + (scale / 10) * 2} 0)`}
+            r={scale / 10}
           />
         </g>
       )}

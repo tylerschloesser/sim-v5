@@ -52,4 +52,8 @@ export class Vec2 {
   mod(m: number): Vec2 {
     return new Vec2(mod(this.x, m), mod(this.y, m))
   }
+
+  equals(v: Vec2): boolean {
+    return this.x === v.x && this.y === v.y
+  }
 }
