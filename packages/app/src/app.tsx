@@ -38,10 +38,7 @@ export function App() {
   usePhysics(world, playerBody, setPlayer, setCamera)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
-  const pointerHandlers = usePointerHandlers(
-    playerBody,
-    setPointer,
-  )
+  const handlers = useHandlers(playerBody, setPointer)
 
   const size = viewport
     ? Math.min(viewport.x, viewport.y) / 10
@@ -57,7 +54,7 @@ export function App() {
       viewBox={viewBox}
       className={styles.app}
       data-size={size}
-      {...pointerHandlers}
+      {...handlers}
     >
       {viewport && (
         <>
@@ -360,7 +357,7 @@ function RenderPointer({
   )
 }
 
-function usePointerHandlers(
+function useHandlers(
   playerBody: Body,
   setPointer: (pointer: Vec2 | null) => void,
 ): Required<
