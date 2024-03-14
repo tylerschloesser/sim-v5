@@ -145,7 +145,7 @@ function* iterateGridLines(viewport: Vec2): Generator<{
   }
 }
 
-function translate(x: number, y: number): string {
+function svgTranslate(x: number, y: number): string {
   return `translate(${x.toFixed(2)} ${y.toFixed(2)})`
 }
 
@@ -227,7 +227,7 @@ function RenderGrid({
   return (
     <g
       visibility={SHOW_GRID ? undefined : 'hidden'}
-      transform={translate(
+      transform={svgTranslate(
         mod(viewport.x / 2 - camera.x * scale, scale) -
           scale,
         mod(viewport.y / 2 - camera.y * scale, scale) -
@@ -269,7 +269,7 @@ function RenderWorld({
 }: RenderWorldProps) {
   return (
     <g
-      transform={translate(
+      transform={svgTranslate(
         viewport.x / 2 - camera.x * scale,
         viewport.y / 2 - camera.y * scale,
       )}
@@ -288,7 +288,7 @@ function RenderWorld({
       )}
       <g>
         <circle
-          transform={translate(
+          transform={svgTranslate(
             player.x * scale,
             player.y * scale,
           )}
@@ -300,7 +300,7 @@ function RenderWorld({
         {velocity.len() !== 0 && (
           <g stroke="red" fill="transparent">
             <line
-              transform={translate(
+              transform={svgTranslate(
                 player.x * scale,
                 player.y * scale,
               )}
@@ -309,20 +309,48 @@ function RenderWorld({
               x2={velocity.x * scale}
               y2={velocity.y * scale}
             />
-            <rect
-              transform={translate(
-                Math.floor(player.x + velocity.x) * scale,
-                Math.floor(player.y + velocity.y) * scale,
-              )}
+            <SmoothRect
+              translate={
+                new Vec2(
+                  Math.floor(player.x + velocity.x) * scale,
+                  Math.floor(player.y + velocity.y) * scale,
+                )
+              }
               x={0}
               y={0}
               width={scale}
               height={scale}
             />
+            <rect />
           </g>
         )}
       </g>
     </g>
+  )
+}
+
+interface SmoothRectProps {
+  translate: Vec2
+  x: number
+  y: number
+  width: number
+  height: number
+}
+function SmoothRect({
+  translate,
+  x,
+  y,
+  width,
+  height,
+}: SmoothRectProps) {
+  return (
+    <rect
+      transform={svgTranslate(translate.x, translate.y)}
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+    />
   )
 }
 
