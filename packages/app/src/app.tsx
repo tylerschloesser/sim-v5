@@ -345,7 +345,6 @@ function SmoothRect({
     let handle: number
     function step() {
       const now = self.performance.now()
-      invariant(lastStep.current)
       const elapsed = (now - lastStep.current) / 1000
       lastStep.current = now
 
