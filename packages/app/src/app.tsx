@@ -16,11 +16,13 @@ import { initWorld } from './world.js'
 
 const SHOW_GRID: boolean = true
 type PointerId = number
+type Drag = Array<{ position: Vec2; time: number }>
 
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
   const [pointer, setPointer] = useState<Vec2 | null>(null)
+  const [drag, setDrag] = useState<Drag | null>(null)
   const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
 
