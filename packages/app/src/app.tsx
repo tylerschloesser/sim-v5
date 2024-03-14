@@ -96,9 +96,13 @@ export function App() {
     const runner = Runner.create()
     Runner.start(runner, engine)
 
-    const controller = new AbortController()
-    invariant(svg.current)
+    return () => {
+      Runner.stop(runner)
+    }
+  }, [])
 
+  useEffect(() => {
+    invariant(svg.current)
     const ro = new ResizeObserver((entries) => {
       invariant(entries.length === 1)
       const { contentRect: rect } = entries.at(0)!
@@ -106,16 +110,33 @@ export function App() {
     })
     ro.observe(svg.current)
 
-    init({
-      svg: svg.current,
+    return () => {
+      ro.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    //
+    // disable some events
+    //
+    const controller = new AbortController()
+    const options: AddEventListenerOptions = {
       signal: controller.signal,
-      setPointer,
-    })
+      passive: false,
+    }
+    function listener(ev: Event) {
+      ev.preventDefault()
+    }
+    invariant(svg.current)
+    // prettier-ignore
+    {
+      svg.current.addEventListener('wheel', listener, options)
+      svg.current.addEventListener('touchcancel', listener, options)
+      svg.current.addEventListener('touchend', listener, options)
+      svg.current.addEventListener('touchstart', listener, options)
+    }
     return () => {
       controller.abort()
-      ro.disconnect()
-
-      Runner.stop(runner)
     }
   }, [])
 
@@ -267,27 +288,6 @@ function* iterateGridLines(viewport: Vec2): Generator<{
     const y2 = rows * size
     // prettier-ignore
     yield { key: `${key++}`, x1, y1, x2, y2 }
-  }
-}
-
-interface InitArgs {
-  svg: SVGSVGElement
-  signal: AbortSignal
-  setPointer(pointer: Vec2 | null): void
-}
-
-function init({ svg, signal, setPointer }: InitArgs): void {
-  // prettier-ignore
-  {
-    svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
-  }
-
-  // prettier-ignore
-  {
-    const options: AddEventListenerOptions = { signal, passive: false }
-    svg.addEventListener('touchcancel', (ev) => { ev.preventDefault() }, options)
-    svg.addEventListener('touchend', (ev) => { ev.preventDefault() }, options)
-    svg.addEventListener('touchstart', (ev) => { ev.preventDefault() }, options)
   }
 }
 
