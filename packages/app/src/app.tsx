@@ -45,7 +45,23 @@ function move(
   elapsed: number,
   world: World,
 ): Vec2 {
-  return position.add(velocity.mul(elapsed))
+  const dir = velocity.mul(elapsed)
+
+  const start = position
+  const end = position.add(dir)
+
+  if (start.floor().equals(end.floor())) {
+    return end
+  }
+
+  const endCellId = `${end.floor().x}.${end.floor().y}`
+  const endCell = world.cells[endCellId]
+
+  if (endCell?.type === CellType.enum.Grass) {
+    return end
+  }
+
+  return start
 }
 
 function usePlayer(velocity: Vec2, world: World): Vec2 {
