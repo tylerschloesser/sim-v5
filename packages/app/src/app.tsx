@@ -12,7 +12,7 @@ type PointerId = number
 
 interface Drag {
   pointerId: PointerId
-  events: { time: number; x: number; y: number }[]
+  events: { time: number; position: Vec2 }[]
 }
 
 export function App() {
@@ -257,8 +257,8 @@ interface RenderPointerProps {
   size: number
 }
 function RenderDrag({ drag, size }: RenderPointerProps) {
-  const start = drag?.events.at(0)
-  let end = drag?.events.at(-1)
+  const start = drag?.events.at(0)?.position
+  let end = drag?.events.at(-1)?.position
   if (end === start) {
     end = undefined
   }
@@ -295,8 +295,12 @@ function useHandlers(
   >
 > {
   return useMemo(() => {
-    const clearDrag = () => {
-      setDrag(null)
+    const clearDrag = (ev: React.PointerEvent) => {
+      setDrag((drag) => {
+        if (ev.pointerId === drag?.pointerId) {
+          return null
+        }
+      })
     }
     return {
       onPointerDown: (ev) => {
@@ -324,8 +328,7 @@ function useHandlers(
           }
           prev.events.push({
             time: ev.timeStamp,
-            x: ev.clientX,
-            y: ev.clientY,
+            position: new Vec2(ev.clientX, ev.clientY),
           })
         })
       },
