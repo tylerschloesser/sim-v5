@@ -102,31 +102,7 @@ export function App() {
   }, [])
 
   useResize(svg, setViewport)
-
-  useEffect(() => {
-    //
-    // disable some events
-    //
-    const controller = new AbortController()
-    const options: AddEventListenerOptions = {
-      signal: controller.signal,
-      passive: false,
-    }
-    function listener(ev: Event) {
-      ev.preventDefault()
-    }
-    invariant(svg.current)
-    // prettier-ignore
-    {
-      svg.current.addEventListener('wheel', listener, options)
-      svg.current.addEventListener('touchcancel', listener, options)
-      svg.current.addEventListener('touchend', listener, options)
-      svg.current.addEventListener('touchstart', listener, options)
-    }
-    return () => {
-      controller.abort()
-    }
-  }, [])
+  usePreventDefaults(svg)
 
   const size = viewport
     ? Math.min(viewport.x, viewport.y) / 10
@@ -315,6 +291,35 @@ function useResize(
     ro.observe(svg.current)
     return () => {
       ro.disconnect()
+    }
+  }, [])
+}
+
+function usePreventDefaults(
+  svg: React.RefObject<SVGSVGElement>,
+): void {
+  useEffect(() => {
+    const controller = new AbortController()
+    const options: AddEventListenerOptions = {
+      signal: controller.signal,
+      passive: false,
+    }
+    function listener(ev: Event) {
+      ev.preventDefault()
+    }
+    invariant(svg.current)
+    // prettier-ignore
+    {
+      // disable the bounce on desktop
+      svg.current.addEventListener('wheel', listener, options)
+
+      // disable the swipe back/forward navigation on mobile
+      svg.current.addEventListener('touchcancel', listener, options)
+      svg.current.addEventListener('touchend', listener, options)
+      svg.current.addEventListener('touchstart', listener, options)
+    }
+    return () => {
+      controller.abort()
     }
   }, [])
 }
