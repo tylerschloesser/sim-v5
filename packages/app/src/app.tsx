@@ -275,6 +275,7 @@ function usePhysics(
   setPlayer: (cb: (prev: Vec2) => Vec2) => void,
   setCamera: (cb: (prev: Vec2) => Vec2) => void,
 ): void {
+  const deps: React.DependencyList = [world, playerBody]
   useEffect(() => {
     const engine = Engine.create({
       gravity: new Vec2(0, 0),
@@ -330,5 +331,5 @@ function usePhysics(
     return () => {
       Runner.stop(runner)
     }
-  }, [])
+  }, deps)
 }
