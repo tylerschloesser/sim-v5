@@ -101,22 +101,7 @@ export function App() {
             world={world}
             player={player}
           />
-          <g
-            visibility={pointer ? undefined : 'hidden'}
-            transform={
-              pointer
-                ? translate(pointer.x, pointer.y)
-                : undefined
-            }
-          >
-            <circle
-              cx="0"
-              cy="0"
-              r={size * 1.5}
-              fill="transparent"
-              stroke="blue"
-            />
-          </g>
+          <RenderPointer pointer={pointer} size={size} />
         </>
       )}
     </svg>
@@ -369,6 +354,34 @@ function RenderWorld({
         cy="0"
         r={size / 2}
         fill="blue"
+      />
+    </g>
+  )
+}
+
+interface RenderPointerProps {
+  pointer: Vec2
+  size: number
+}
+function RenderPointer({
+  pointer,
+  size,
+}: RenderPointerProps) {
+  return (
+    <g
+      visibility={pointer ? undefined : 'hidden'}
+      transform={
+        pointer
+          ? translate(pointer.x, pointer.y)
+          : undefined
+      }
+    >
+      <circle
+        cx="0"
+        cy="0"
+        r={size * 1.5}
+        fill="transparent"
+        stroke="blue"
       />
     </g>
   )
