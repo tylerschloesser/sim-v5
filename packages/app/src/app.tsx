@@ -258,20 +258,26 @@ interface RenderPointerProps {
 }
 function RenderDrag({ drag, size }: RenderPointerProps) {
   const start = drag?.events.at(0)
+  let end = drag?.events.at(-1)
+  if (end === start) {
+    end = undefined
+  }
+
+  if (!start) return null
   return (
-    <g
-      visibility={start ? undefined : 'hidden'}
-      transform={
-        start ? translate(start.x, start.y) : undefined
-      }
-    >
-      <circle
-        cx="0"
-        cy="0"
-        r={size * 1.5}
-        fill="transparent"
-        stroke="blue"
-      />
+    <g stroke="blue" fill="transparent">
+      {end && (
+        <line
+          x1={start.x}
+          y1={start.y}
+          x2={end.x}
+          y2={end.y}
+        />
+      )}
+      <circle cx={start.x} cy={start.y} r={size * 1.5} />
+      {end && (
+        <circle cx={end.x} cy={end.y} r={size * 1.5} />
+      )}
     </g>
   )
 }
@@ -313,8 +319,7 @@ function useHandlers(
 
       onPointerMove: (ev) => {
         setDrag((prev) => {
-          invariant(prev)
-          if (prev.pointerId !== ev.pointerId) {
+          if (!prev || prev.pointerId !== ev.pointerId) {
             return
           }
           prev.events.push({
