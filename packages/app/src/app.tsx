@@ -374,7 +374,7 @@ function SmoothRect({
           1e-6,
         )
 
-        let velocity = dir.norm().mul(scale * speed)
+        const velocity = dir.norm().mul(scale * speed)
         const delta = velocity.mul(elapsed)
 
         if (delta.len() >= dir.len()) {
