@@ -37,7 +37,7 @@ export function App() {
     }
     const start = drag?.events.at(0)?.position
     let end = drag?.events.at(-1)?.position
-    if (end === start) {
+    if (end && start && end.equals(start)) {
       end = undefined
     }
     const dir = (
@@ -409,7 +409,7 @@ interface RenderPointerProps {
 function RenderDrag({ drag, scale }: RenderPointerProps) {
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
-  if (end === start) {
+  if (end && start && end.equals(start)) {
     end = undefined
   }
 
