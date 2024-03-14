@@ -307,11 +307,16 @@ function useHandlers(
               ],
             }
           }
+          invariant(prev.pointerId !== ev.pointerId)
+        })
+      },
 
+      onPointerMove: (ev) => {
+        setDrag((prev) => {
+          invariant(prev)
           if (prev.pointerId !== ev.pointerId) {
             return
           }
-
           prev.events.push({
             time: ev.timeStamp,
             x: ev.clientX,
@@ -323,8 +328,6 @@ function useHandlers(
       onPointerUp: clearDrag,
       onPointerLeave: clearDrag,
       onPointerCancel: clearDrag,
-
-      onPointerMove: (ev) => {},
     }
   }, [])
 }
