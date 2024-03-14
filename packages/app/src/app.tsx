@@ -366,12 +366,12 @@ function useHandlers(
     'onPointerMove' | 'onPointerUp'
   >
 > {
-  const pointerEventCache = useMemo(
-    () => new Map<PointerId, React.PointerEvent>(),
-    [],
-  )
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const pointerEventCache = new Map<
+      PointerId,
+      React.PointerEvent
+    >()
+    return {
       onPointerMove: (ev) => {
         setPointer(new Vec2(ev.clientX, ev.clientY))
         const prev = pointerEventCache.get(ev.pointerId)
@@ -395,7 +395,6 @@ function useHandlers(
       onPointerUp: () => {
         setPointer(null)
       },
-    }),
-    [playerBody, pointerEventCache],
-  )
+    }
+  }, [playerBody])
 }
