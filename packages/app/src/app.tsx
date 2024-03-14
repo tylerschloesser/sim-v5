@@ -39,21 +39,8 @@ function useVelocity(
   return velocity
 }
 
-export function App() {
-  // prettier-ignore
-  const [viewport, setViewport] = useState<Vec2 | null>(null)
-  const [drag, setDrag] = useImmer<Drag | null>(null)
-  // const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
+function usePlayer(velocity: Vec2): Vec2 {
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
-
-  const camera = player
-
-  const scale = viewport
-    ? Math.min(viewport.x, viewport.y) / 10
-    : null
-
-  const velocity = useVelocity(scale, drag)
-
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
     if (velocity.len() === 0) {
@@ -77,7 +64,21 @@ export function App() {
       self.cancelAnimationFrame(handle)
     }
   }, [velocity])
+  return player
+}
 
+export function App() {
+  // prettier-ignore
+  const [viewport, setViewport] = useState<Vec2 | null>(null)
+
+  const scale = viewport
+    ? Math.min(viewport.x, viewport.y) / 10
+    : null
+
+  const [drag, setDrag] = useImmer<Drag | null>(null)
+  const velocity = useVelocity(scale, drag)
+  const player = usePlayer(velocity)
+  const camera = player
   const world = useMemo(initWorld, [])
   const svg = useRef<SVGSVGElement>(null)
   useResize(svg, setViewport)
