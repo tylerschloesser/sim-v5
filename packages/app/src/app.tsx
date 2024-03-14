@@ -8,6 +8,7 @@ import {
 } from 'matter-js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
+import { Updater, useImmer } from 'use-immer'
 import styles from './app.module.scss'
 import { mod } from './math.js'
 import { CellType, World } from './types.js'
@@ -16,13 +17,17 @@ import { initWorld } from './world.js'
 
 const SHOW_GRID: boolean = true
 type PointerId = number
-type Drag = Array<{ position: Vec2; time: number }>
+
+interface Drag {
+  pointerId: PointerId
+  events: React.PointerEvent[]
+}
 
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
   const [pointer, setPointer] = useState<Vec2 | null>(null)
-  const [drag, setDrag] = useState<Drag | null>(null)
+  const [drag, setDrag] = useImmer<Drag | null>(null)
   const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
 
@@ -40,7 +45,11 @@ export function App() {
   usePhysics(world, playerBody, setPlayer, setCamera)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
-  const handlers = useHandlers(playerBody, setPointer)
+  const handlers = useHandlers(
+    playerBody,
+    setPointer,
+    setDrag,
+  )
 
   const size = viewport
     ? Math.min(viewport.x, viewport.y) / 10
@@ -362,10 +371,11 @@ function RenderPointer({
 function useHandlers(
   playerBody: Body,
   setPointer: (pointer: Vec2 | null) => void,
+  setDrag: Updater<Drag | null>,
 ): Required<
   Pick<
     React.DOMAttributes<Element>,
-    'onPointerMove' | 'onPointerUp'
+    'onPointerDown' | 'onPointerMove' | 'onPointerUp'
   >
 > {
   return useMemo(() => {
@@ -374,8 +384,17 @@ function useHandlers(
       React.PointerEvent
     >()
     return {
+      onPointerDown: (ev) => {
+        setDrag((prev) => {
+          if (prev === null) {
+            return prev
+          }
+          return prev
+        })
+      },
       onPointerMove: (ev) => {
         setPointer(new Vec2(ev.clientX, ev.clientY))
+
         const prev = pointerEventCache.get(ev.pointerId)
         pointerEventCache.set(ev.pointerId, ev)
 
