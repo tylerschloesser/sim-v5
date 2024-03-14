@@ -1,11 +1,3 @@
-import {
-  Bodies,
-  Body,
-  Composite,
-  Engine,
-  Events,
-  Runner,
-} from 'matter-js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
@@ -20,36 +12,21 @@ type PointerId = number
 
 interface Drag {
   pointerId: PointerId
-  events: React.PointerEvent[]
+  events: { time: number; x: number; y: number }[]
 }
 
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
-  const [pointer, setPointer] = useState<Vec2 | null>(null)
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
 
-  const playerBody = useMemo(
-    () =>
-      Bodies.rectangle(0, 0, 1, 1, {
-        frictionAir: 0.1,
-        slop: 0,
-        friction: 0,
-      }),
-    [],
-  )
   const world = useMemo(initWorld, [])
   const svg = useRef<SVGSVGElement>(null)
-  usePhysics(world, playerBody, setPlayer, setCamera)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
-  const handlers = useHandlers(
-    playerBody,
-    setPointer,
-    setDrag,
-  )
+  const handlers = useHandlers(setDrag)
 
   const size = viewport
     ? Math.min(viewport.x, viewport.y) / 10
@@ -81,7 +58,7 @@ export function App() {
             world={world}
             player={player}
           />
-          <RenderPointer pointer={pointer} size={size} />
+          <RenderDrag drag={drag} size={size} />
         </>
       )}
     </svg>
@@ -192,71 +169,6 @@ function usePreventDefaults(
   }, [])
 }
 
-function usePhysics(
-  world: World,
-  playerBody: Body,
-  setPlayer: (cb: (prev: Vec2) => Vec2) => void,
-  setCamera: (cb: (prev: Vec2) => Vec2) => void,
-): void {
-  const deps: React.DependencyList = [world, playerBody]
-  useEffect(() => {
-    const engine = Engine.create({
-      gravity: new Vec2(0, 0),
-    })
-
-    Composite.add(engine.world, [
-      ...Array.from(iterateCells(world))
-        .filter(({ type }) => type === CellType.enum.Stone)
-        .map(({ x, y }) =>
-          Bodies.rectangle(x + 0.5, y + 0.5, 1, 1, {
-            isStatic: true,
-            slop: 0,
-            friction: 0,
-          }),
-        ),
-      playerBody,
-    ])
-
-    Events.on(engine, 'afterUpdate', () => {
-      setPlayer((prev) => {
-        if (
-          prev.x !== playerBody.position.x ||
-          prev.y !== playerBody.position.y
-        ) {
-          return new Vec2(
-            playerBody.position.x,
-            playerBody.position.y,
-          )
-        }
-        return prev
-      })
-      setCamera((prev) => {
-        if (
-          prev.x !== playerBody.position.x ||
-          prev.y !== playerBody.position.y
-        ) {
-          return new Vec2(
-            playerBody.position.x,
-            playerBody.position.y,
-          )
-        }
-        return prev
-      })
-    })
-
-    Events.on(engine, 'collisionStart', () => {
-      console.log('collision')
-    })
-
-    const runner = Runner.create()
-    Runner.start(runner, engine)
-
-    return () => {
-      Runner.stop(runner)
-    }
-  }, deps)
-}
-
 interface RenderGridProps {
   viewport: Vec2
   camera: Vec2
@@ -341,20 +253,16 @@ function RenderWorld({
 }
 
 interface RenderPointerProps {
-  pointer: Vec2 | null
+  drag: Drag | null
   size: number
 }
-function RenderPointer({
-  pointer,
-  size,
-}: RenderPointerProps) {
+function RenderDrag({ drag, size }: RenderPointerProps) {
+  const start = drag?.events.at(0)
   return (
     <g
-      visibility={pointer ? undefined : 'hidden'}
+      visibility={start ? undefined : 'hidden'}
       transform={
-        pointer
-          ? translate(pointer.x, pointer.y)
-          : undefined
+        start ? translate(start.x, start.y) : undefined
       }
     >
       <circle
@@ -369,53 +277,54 @@ function RenderPointer({
 }
 
 function useHandlers(
-  playerBody: Body,
-  setPointer: (pointer: Vec2 | null) => void,
   setDrag: Updater<Drag | null>,
 ): Required<
   Pick<
     React.DOMAttributes<Element>,
-    'onPointerDown' | 'onPointerMove' | 'onPointerUp'
+    | 'onPointerUp'
+    | 'onPointerDown'
+    | 'onPointerMove'
+    | 'onPointerLeave'
+    | 'onPointerCancel'
   >
 > {
   return useMemo(() => {
-    const pointerEventCache = new Map<
-      PointerId,
-      React.PointerEvent
-    >()
+    const clearDrag = () => {
+      setDrag(null)
+    }
     return {
       onPointerDown: (ev) => {
         setDrag((prev) => {
           if (prev === null) {
-            return prev
+            return {
+              pointerId: ev.pointerId,
+              events: [
+                {
+                  time: ev.timeStamp,
+                  x: ev.clientX,
+                  y: ev.clientY,
+                },
+              ],
+            }
           }
-          return prev
+
+          if (prev.pointerId !== ev.pointerId) {
+            return
+          }
+
+          prev.events.push({
+            time: ev.timeStamp,
+            x: ev.clientX,
+            y: ev.clientY,
+          })
         })
       },
-      onPointerMove: (ev) => {
-        setPointer(new Vec2(ev.clientX, ev.clientY))
 
-        const prev = pointerEventCache.get(ev.pointerId)
-        pointerEventCache.set(ev.pointerId, ev)
+      onPointerUp: clearDrag,
+      onPointerLeave: clearDrag,
+      onPointerCancel: clearDrag,
 
-        if (prev?.buttons && ev.buttons) {
-          const dx = ev.clientX - prev.clientX
-          const dy = ev.clientY - prev.clientY
-          const dt = ev.timeStamp - prev.timeStamp
-
-          const d = new Vec2(dx, dy)
-          const speed = d.len()
-
-          const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
-
-          const vx = (dx / dt) * scale
-          const vy = (dy / dt) * scale
-          Body.setVelocity(playerBody, new Vec2(vx, vy))
-        }
-      },
-      onPointerUp: () => {
-        setPointer(null)
-      },
+      onPointerMove: (ev) => {},
     }
-  }, [playerBody])
+  }, [])
 }
