@@ -19,8 +19,46 @@ export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
   const [drag, setDrag] = useImmer<Drag | null>(null)
-  const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
+  // const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
+
+  const camera = player
+
+  // prettier-ignore
+  const velocity  = useRef<Vec2>(new Vec2(0, 0))
+
+  useEffect(() => {
+    const start = drag?.events.at(0)?.position
+    let end = drag?.events.at(-1)?.position
+    if (end === start) {
+      end = undefined
+    }
+    const dir =
+      start && end ? end.sub(start) : new Vec2(0, 0)
+    velocity.current.x = dir.x
+    velocity.current.y = dir.y
+  }, [drag])
+
+  useEffect(() => {
+    let handle: number
+    let last = self.performance.now()
+    function step() {
+      const now = self.performance.now()
+      const elapsed = (now - last) / 1000
+      last = now
+      const speed = velocity.current.len()
+      if (speed > 0) {
+        setPlayer((prev) =>
+          prev.add(velocity.current.mul(elapsed)),
+        )
+      }
+      handle = self.requestAnimationFrame(step)
+    }
+    handle = self.requestAnimationFrame(step)
+    return () => {
+      self.cancelAnimationFrame(handle)
+    }
+  }, [])
 
   const world = useMemo(initWorld, [])
   const svg = useRef<SVGSVGElement>(null)
@@ -28,7 +66,7 @@ export function App() {
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
 
-  const size = viewport
+  const scale = viewport
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
@@ -41,7 +79,7 @@ export function App() {
       ref={svg}
       viewBox={viewBox}
       className={styles.app}
-      data-size={size}
+      data-scale={scale}
       {...handlers}
     >
       {viewport && (
@@ -49,16 +87,16 @@ export function App() {
           <RenderGrid
             viewport={viewport}
             camera={camera}
-            size={size}
+            scale={scale}
           />
           <RenderWorld
             viewport={viewport}
             camera={camera}
-            size={size}
+            scale={scale}
             world={world}
             player={player}
           />
-          <RenderDrag drag={drag} size={size} />
+          <RenderDrag drag={drag} scale={scale} />
         </>
       )}
     </svg>
@@ -72,29 +110,29 @@ function* iterateGridLines(viewport: Vec2): Generator<{
   x2: number
   y2: number
 }> {
-  const size = viewport
+  const scale = viewport
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
-  const rows = Math.ceil(viewport.y / size) + 1
-  const cols = Math.ceil(viewport.x / size) + 1
+  const rows = Math.ceil(viewport.y / scale) + 1
+  const cols = Math.ceil(viewport.x / scale) + 1
 
   let key = 0
 
   for (let row = 0; row <= rows; row++) {
     const x1 = 0
-    const y1 = row * size
-    const x2 = cols * size
+    const y1 = row * scale
+    const x2 = cols * scale
     const y2 = y1
     // prettier-ignore
     yield { key: `${key++}`, x1, y1, x2, y2 }
   }
 
   for (let col = 0; col <= cols; col++) {
-    const x1 = col * size
+    const x1 = col * scale
     const y1 = 0
     const x2 = x1
-    const y2 = rows * size
+    const y2 = rows * scale
     // prettier-ignore
     yield { key: `${key++}`, x1, y1, x2, y2 }
   }
@@ -172,19 +210,21 @@ function usePreventDefaults(
 interface RenderGridProps {
   viewport: Vec2
   camera: Vec2
-  size: number
+  scale: number
 }
 function RenderGrid({
   viewport,
   camera,
-  size,
+  scale,
 }: RenderGridProps) {
   return (
     <g
       visibility={SHOW_GRID ? undefined : 'hidden'}
       transform={translate(
-        mod(viewport.x / 2 - camera.x * size, size) - size,
-        mod(viewport.y / 2 - camera.y * size, size) - size,
+        mod(viewport.x / 2 - camera.x * scale, scale) -
+          scale,
+        mod(viewport.y / 2 - camera.y * scale, scale) -
+          scale,
       )}
       strokeWidth={2}
       stroke="hsl(0, 0%, 10%)"
@@ -207,44 +247,44 @@ function RenderGrid({
 interface RenderWorldProps {
   viewport: Vec2
   camera: Vec2
-  size: number
+  scale: number
   world: World
   player: Vec2
 }
 function RenderWorld({
   viewport,
   camera,
-  size,
+  scale,
   world,
   player,
 }: RenderWorldProps) {
   return (
     <g
       transform={translate(
-        viewport.x / 2 - camera.x * size,
-        viewport.y / 2 - camera.y * size,
+        viewport.x / 2 - camera.x * scale,
+        viewport.y / 2 - camera.y * scale,
       )}
     >
       {Array.from(iterateCells(world)).map(
         ({ id, x, y, color }) => (
           <rect
             key={id}
-            x={x * size}
-            y={y * size}
-            width={size}
-            height={size}
+            x={x * scale}
+            y={y * scale}
+            width={scale}
+            height={scale}
             fill={color}
           />
         ),
       )}
       <circle
         transform={translate(
-          player.x * size,
-          player.y * size,
+          player.x * scale,
+          player.y * scale,
         )}
         x={0}
         y={0}
-        r={size / 2}
+        r={scale / 2}
         fill="blue"
       />
     </g>
@@ -253,9 +293,9 @@ function RenderWorld({
 
 interface RenderPointerProps {
   drag: Drag | null
-  size: number
+  scale: number
 }
-function RenderDrag({ drag, size }: RenderPointerProps) {
+function RenderDrag({ drag, scale }: RenderPointerProps) {
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
   if (end === start) {
@@ -280,9 +320,9 @@ function RenderDrag({ drag, size }: RenderPointerProps) {
             y2={end.y}
           />
         )}
-        <circle cx={start.x} cy={start.y} r={size * 1.5} />
+        <circle cx={start.x} cy={start.y} r={scale * 1.5} />
         {end && (
-          <circle cx={end.x} cy={end.y} r={size * 1.5} />
+          <circle cx={end.x} cy={end.y} r={scale * 1.5} />
         )}
       </g>
       {dist && dist > 1 && (
