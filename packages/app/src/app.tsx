@@ -94,35 +94,13 @@ export function App() {
             camera={camera}
             size={size}
           />
-          <g
-            transform={translate(
-              viewport.x / 2 - camera.x * size,
-              viewport.y / 2 - camera.y * size,
-            )}
-          >
-            {Array.from(iterateCells(world)).map(
-              ({ id, x, y, color }) => (
-                <rect
-                  key={id}
-                  x={x * size}
-                  y={y * size}
-                  width={size}
-                  height={size}
-                  fill={color}
-                />
-              ),
-            )}
-            <circle
-              transform={translate(
-                player.x * size,
-                player.y * size,
-              )}
-              cx="0"
-              cy="0"
-              r={size / 2}
-              fill="blue"
-            />
-          </g>
+          <RenderWorld
+            viewport={viewport}
+            camera={camera}
+            size={size}
+            world={world}
+            player={player}
+          />
           <g
             visibility={pointer ? undefined : 'hidden'}
             transform={
@@ -345,6 +323,53 @@ function RenderGrid({
           />
         ),
       )}
+    </g>
+  )
+}
+
+interface RenderWorldProps {
+  viewport: Vec2
+  camera: Vec2
+  size: number
+  world: World
+  player: Vec2
+}
+function RenderWorld({
+  viewport,
+  camera,
+  size,
+  world,
+  player,
+}: RenderWorldProps) {
+  return (
+    <g
+      transform={translate(
+        viewport.x / 2 - camera.x * size,
+        viewport.y / 2 - camera.y * size,
+      )}
+    >
+      {Array.from(iterateCells(world)).map(
+        ({ id, x, y, color }) => (
+          <rect
+            key={id}
+            x={x * size}
+            y={y * size}
+            width={size}
+            height={size}
+            fill={color}
+          />
+        ),
+      )}
+      <circle
+        transform={translate(
+          player.x * size,
+          player.y * size,
+        )}
+        cx="0"
+        cy="0"
+        r={size / 2}
+        fill="blue"
+      />
     </g>
   )
 }
