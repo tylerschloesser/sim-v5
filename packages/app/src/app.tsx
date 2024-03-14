@@ -28,11 +28,7 @@ export function App() {
 
   const world = useMemo(initWorld, [])
 
-  const refs = useRef<{
-    root: SVGSVGElement | null
-    grid: SVGGElement | null
-    world: SVGGElement | null
-  }>({ root: null, grid: null, world: null })
+  const svg = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
     const engine = Engine.create({
@@ -93,17 +89,17 @@ export function App() {
     Runner.start(runner, engine)
 
     const controller = new AbortController()
-    invariant(refs.current.root)
+    invariant(svg.current)
 
     const ro = new ResizeObserver((entries) => {
       invariant(entries.length === 1)
       const { contentRect: rect } = entries.at(0)!
       setViewport(new Vec2(rect.width, rect.height))
     })
-    ro.observe(refs.current.root)
+    ro.observe(svg.current)
 
     init({
-      root: refs.current.root,
+      svg: svg.current,
       signal: controller.signal,
       setPointer,
       playerBody,
@@ -122,12 +118,12 @@ export function App() {
 
   return (
     <svg
+      ref={svg}
       viewBox={
         viewport
           ? `0 0 ${viewport.x} ${viewport.y}`
           : undefined
       }
-      ref={(ref) => (refs.current.root = ref)}
       className={styles.app}
       data-size={size}
     >
@@ -135,7 +131,6 @@ export function App() {
         <>
           <g
             visibility={SHOW_GRID ? undefined : 'hidden'}
-            ref={(ref) => (refs.current.grid = ref)}
             transform={translate(
               mod(viewport.x / 2 - camera.x * size, size) -
                 size,
@@ -158,7 +153,6 @@ export function App() {
             )}
           </g>
           <g
-            ref={(ref) => (refs.current.world = ref)}
             transform={translate(
               viewport.x / 2 - camera.x * size,
               viewport.y / 2 - camera.y * size,
@@ -245,24 +239,24 @@ function* iterateGridLines(viewport: Vec2): Generator<{
 }
 
 interface InitArgs {
-  root: SVGSVGElement
+  svg: SVGSVGElement
   signal: AbortSignal
   setPointer(pointer: Vec2 | null): void
   playerBody: Body
 }
 
 function init({
-  root,
+  svg,
   signal,
   setPointer,
   playerBody,
 }: InitArgs): void {
   // prettier-ignore
   {
-    root.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
+    svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
 
-  root.addEventListener(
+  svg.addEventListener(
     'pointermove',
     (ev) => {
       setPointer(new Vec2(ev.offsetX, ev.offsetY))
@@ -289,7 +283,7 @@ function init({
     { signal },
   )
 
-  root.addEventListener(
+  svg.addEventListener(
     'pointerup',
     () => {
       setPointer(null)
@@ -300,9 +294,9 @@ function init({
   // prettier-ignore
   {
     const options: AddEventListenerOptions = { signal, passive: false }
-    root.addEventListener('touchcancel', (ev) => { ev.preventDefault() }, options)
-    root.addEventListener('touchend', (ev) => { ev.preventDefault() }, options)
-    root.addEventListener('touchstart', (ev) => { ev.preventDefault() }, options)
+    svg.addEventListener('touchcancel', (ev) => { ev.preventDefault() }, options)
+    svg.addEventListener('touchend', (ev) => { ev.preventDefault() }, options)
+    svg.addEventListener('touchstart', (ev) => { ev.preventDefault() }, options)
   }
 }
 
