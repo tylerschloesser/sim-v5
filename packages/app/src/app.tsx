@@ -304,6 +304,7 @@ function RenderWorld({
               y2={velocity.y * scale}
             />
             <SmoothRect
+              scale={scale}
               translate={player
                 .add(velocity)
                 .floor()
@@ -322,6 +323,7 @@ function RenderWorld({
 }
 
 interface SmoothRectProps {
+  scale: number
   translate: Vec2
   x: number
   y: number
@@ -329,15 +331,49 @@ interface SmoothRectProps {
   height: number
 }
 function SmoothRect({
+  scale,
   translate,
   x,
   y,
   width,
   height,
 }: SmoothRectProps) {
+  const [current, setCurrent] = useState(translate)
+
+  const lastStep = useRef<number>(self.performance.now())
+  useEffect(() => {
+    let handle: number
+    function step() {
+      const now = self.performance.now()
+      invariant(lastStep.current)
+      const elapsed = (now - lastStep.current) / 1000
+      lastStep.current = now
+
+      setCurrent((prev) => {
+        if (prev === translate) {
+          return prev
+        }
+
+        const dir = translate.sub(prev)
+
+        let velocity = dir.norm().mul(scale * 10)
+        if (velocity.len() * elapsed >= dir.len()) {
+          return translate
+        }
+
+        return prev.add(velocity.mul(elapsed))
+      })
+      handle = self.requestAnimationFrame(step)
+    }
+    handle = self.requestAnimationFrame(step)
+    return () => {
+      self.cancelAnimationFrame(handle)
+    }
+  }, [translate, scale])
+
   return (
     <rect
-      transform={svgTranslate(translate)}
+      transform={svgTranslate(current)}
       x={x}
       y={y}
       width={width}

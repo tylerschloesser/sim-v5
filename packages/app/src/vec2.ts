@@ -6,6 +6,8 @@ export class Vec2 {
   y: number
 
   constructor(x: number, y: number) {
+    invariant(!Number.isNaN(x))
+    invariant(!Number.isNaN(y))
     this.x = x
     this.y = y
   }
@@ -37,6 +39,9 @@ export class Vec2 {
 
   norm(): Vec2 {
     const len = this.len()
+    if (len === 0) {
+      return this
+    }
     return new Vec2(this.x / len, this.y / len)
   }
 
