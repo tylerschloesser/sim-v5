@@ -257,28 +257,38 @@ interface RenderPointerProps {
   size: number
 }
 function RenderDrag({ drag, size }: RenderPointerProps) {
+  console.log(drag)
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
   if (end === start) {
     end = undefined
   }
 
+  const dir = start && end ? end.sub(start) : null
+  const angle = dir ? Math.atan2(dir.y, dir.x) : null
+  const dist = dir?.len() ?? null
+
   if (!start) return null
   return (
-    <g stroke="blue" fill="transparent">
-      {end && (
-        <line
-          x1={start.x}
-          y1={start.y}
-          x2={end.x}
-          y2={end.y}
-        />
+    <>
+      <g stroke="blue" fill="transparent">
+        {end && (
+          <line
+            x1={start.x}
+            y1={start.y}
+            x2={end.x}
+            y2={end.y}
+          />
+        )}
+        <circle cx={start.x} cy={start.y} r={size * 1.5} />
+        {end && (
+          <circle cx={end.x} cy={end.y} r={size * 1.5} />
+        )}
+      </g>
+      {dist && dist > 1 && (
+        <circle cx={100} cy={100} r={25} stroke="red" />
       )}
-      <circle cx={start.x} cy={start.y} r={size * 1.5} />
-      {end && (
-        <circle cx={end.x} cy={end.y} r={size * 1.5} />
-      )}
-    </g>
+    </>
   )
 }
 
@@ -306,16 +316,19 @@ function useHandlers(
       onPointerDown: (ev) => {
         setDrag((prev) => {
           if (prev === null) {
-            return {
+            const next: Drag = {
               pointerId: ev.pointerId,
               events: [
                 {
                   time: ev.timeStamp,
-                  x: ev.clientX,
-                  y: ev.clientY,
+                  position: new Vec2(
+                    ev.clientX,
+                    ev.clientY,
+                  ),
                 },
               ],
             }
+            return next
           }
           invariant(prev.pointerId !== ev.pointerId)
         })
