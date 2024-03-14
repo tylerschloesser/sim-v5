@@ -52,14 +52,14 @@ export function App() {
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
+  const viewBox = viewport
+    ? `0 0 ${viewport.x} ${viewport.y}`
+    : undefined
+
   return (
     <svg
       ref={svg}
-      viewBox={
-        viewport
-          ? `0 0 ${viewport.x} ${viewport.y}`
-          : undefined
-      }
+      viewBox={viewBox}
       className={styles.app}
       data-size={size}
       {...pointerHandlers}
