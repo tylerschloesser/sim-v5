@@ -15,7 +15,6 @@ import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
 const SHOW_GRID: boolean = true
-
 type PointerId = number
 
 export function App() {
@@ -24,11 +23,6 @@ export function App() {
   const [pointer, setPointer] = useState<Vec2 | null>(null)
   const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
   const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
-
-  const pointerEventCache = useMemo(
-    () => new Map<PointerId, React.PointerEvent>(),
-    [],
-  )
 
   const playerBody = useMemo(
     () =>
@@ -49,6 +43,11 @@ export function App() {
   useResize(svg, setViewport)
   usePreventDefaults(svg)
 
+  const pointerHandlers = usePointerHandlers(
+    playerBody,
+    setPointer,
+  )
+
   const size = viewport
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
@@ -63,29 +62,7 @@ export function App() {
       }
       className={styles.app}
       data-size={size}
-      onPointerMove={(ev) => {
-        setPointer(new Vec2(ev.clientX, ev.clientY))
-        const prev = pointerEventCache.get(ev.pointerId)
-        pointerEventCache.set(ev.pointerId, ev)
-
-        if (prev?.buttons && ev.buttons) {
-          const dx = ev.clientX - prev.clientX
-          const dy = ev.clientY - prev.clientY
-          const dt = ev.timeStamp - prev.timeStamp
-
-          const d = new Vec2(dx, dy)
-          const speed = d.len()
-
-          const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
-
-          const vx = (dx / dt) * scale
-          const vy = (dy / dt) * scale
-          Body.setVelocity(playerBody, new Vec2(vx, vy))
-        }
-      }}
-      onPointerUp={() => {
-        setPointer(null)
-      }}
+      {...pointerHandlers}
     >
       {viewport && (
         <>
@@ -385,5 +362,48 @@ function RenderPointer({
         stroke="blue"
       />
     </g>
+  )
+}
+
+function usePointerHandlers(
+  playerBody: Body,
+  setPointer: (pointer: Vec2 | null) => void,
+): Required<
+  Pick<
+    React.DOMAttributes<Element>,
+    'onPointerMove' | 'onPointerUp'
+  >
+> {
+  const pointerEventCache = useMemo(
+    () => new Map<PointerId, React.PointerEvent>(),
+    [],
+  )
+  return useMemo(
+    () => ({
+      onPointerMove: (ev) => {
+        setPointer(new Vec2(ev.clientX, ev.clientY))
+        const prev = pointerEventCache.get(ev.pointerId)
+        pointerEventCache.set(ev.pointerId, ev)
+
+        if (prev?.buttons && ev.buttons) {
+          const dx = ev.clientX - prev.clientX
+          const dy = ev.clientY - prev.clientY
+          const dt = ev.timeStamp - prev.timeStamp
+
+          const d = new Vec2(dx, dy)
+          const speed = d.len()
+
+          const scale = ((speed + 1) ** 1 - 1) * (1 / 100)
+
+          const vx = (dx / dt) * scale
+          const vy = (dy / dt) * scale
+          Body.setVelocity(playerBody, new Vec2(vx, vy))
+        }
+      },
+      onPointerUp: () => {
+        setPointer(null)
+      },
+    }),
+    [playerBody, pointerEventCache],
   )
 }
