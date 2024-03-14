@@ -40,9 +40,9 @@ export function App() {
     if (end && start && end.equals(start)) {
       end = undefined
     }
-    const delta =
+    const dir =
       start && end ? end.sub(start) : new Vec2(0, 0)
-    setVelocity(delta.div(scale))
+    setVelocity(dir.div(scale))
   }, [drag, scale])
 
   const lastStep = useRef<number | null>(null)
