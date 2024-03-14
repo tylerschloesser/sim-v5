@@ -33,16 +33,11 @@ export function App() {
       }),
     [],
   )
-
   const world = useMemo(initWorld, [])
-
   const svg = useRef<SVGSVGElement>(null)
-
   usePhysics(world, playerBody, setPlayer, setCamera)
-
   useResize(svg, setViewport)
   usePreventDefaults(svg)
-
   const pointerHandlers = usePointerHandlers(
     playerBody,
     setPointer,
