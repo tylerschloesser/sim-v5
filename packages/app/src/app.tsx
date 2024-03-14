@@ -15,21 +15,12 @@ interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
-export function App() {
-  // prettier-ignore
-  const [viewport, setViewport] = useState<Vec2 | null>(null)
-  const [drag, setDrag] = useImmer<Drag | null>(null)
-  // const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
-  const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
-
-  const camera = player
-
+function useVelocity(
+  scale: number | null,
+  drag: Drag | null,
+): Vec2 {
   // prettier-ignore
   const [velocity, setVelocity]  = useState<Vec2>(new Vec2(0, 0))
-
-  const scale = viewport
-    ? Math.min(viewport.x, viewport.y) / 10
-    : null
 
   useEffect(() => {
     if (scale === null) {
@@ -44,6 +35,24 @@ export function App() {
       start && end ? end.sub(start) : new Vec2(0, 0)
     setVelocity(dir.div(scale))
   }, [drag, scale])
+
+  return velocity
+}
+
+export function App() {
+  // prettier-ignore
+  const [viewport, setViewport] = useState<Vec2 | null>(null)
+  const [drag, setDrag] = useImmer<Drag | null>(null)
+  // const [camera, setCamera] = useState<Vec2>(new Vec2(0, 0))
+  const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
+
+  const camera = player
+
+  const scale = viewport
+    ? Math.min(viewport.x, viewport.y) / 10
+    : null
+
+  const velocity = useVelocity(scale, drag)
 
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
