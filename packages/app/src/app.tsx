@@ -155,6 +155,9 @@ export function App() {
           Body.setVelocity(playerBody, new Vec2(vx, vy))
         }
       }}
+      onPointerUp={() => {
+        setPointer(null)
+      }}
     >
       {viewport && (
         <>
@@ -278,14 +281,6 @@ function init({ svg, signal, setPointer }: InitArgs): void {
   {
     svg.addEventListener('wheel', (ev) => { ev.preventDefault() }, { passive: false, signal })
   }
-
-  svg.addEventListener(
-    'pointerup',
-    () => {
-      setPointer(null)
-    },
-    { signal },
-  )
 
   // prettier-ignore
   {
