@@ -360,7 +360,7 @@ function RenderWorld({
 }
 
 interface RenderPointerProps {
-  pointer: Vec2
+  pointer: Vec2 | null
   size: number
 }
 function RenderPointer({
