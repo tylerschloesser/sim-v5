@@ -310,12 +310,10 @@ function RenderWorld({
               y2={velocity.y * scale}
             />
             <SmoothRect
-              translate={
-                new Vec2(
-                  Math.floor(player.x + velocity.x) * scale,
-                  Math.floor(player.y + velocity.y) * scale,
-                )
-              }
+              translate={player
+                .add(velocity)
+                .floor()
+                .mul(scale)}
               x={0}
               y={0}
               width={scale}

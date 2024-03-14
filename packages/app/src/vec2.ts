@@ -34,4 +34,8 @@ export class Vec2 {
     const len = this.len()
     return new Vec2(this.x / len, this.y / len)
   }
+
+  floor(): Vec2 {
+    return new Vec2(Math.floor(this.x), Math.floor(this.y))
+  }
 }
