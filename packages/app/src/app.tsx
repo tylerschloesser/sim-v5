@@ -169,16 +169,22 @@ export function App() {
               fill="blue"
             />
           </g>
-          {pointer && (
+          <g
+            visibility={pointer ? undefined : 'hidden'}
+            transform={
+              pointer
+                ? translate(pointer.x, pointer.y)
+                : undefined
+            }
+          >
             <circle
-              transform={translate(pointer.x, pointer.y)}
               cx="0"
               cy="0"
               r={size * 1.5}
               fill="transparent"
               stroke="blue"
             />
-          )}
+          </g>
         </>
       )}
     </svg>
