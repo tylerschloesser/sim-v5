@@ -1,4 +1,5 @@
 import invariant from 'tiny-invariant'
+import { mod } from './math.js'
 
 export class Vec2 {
   x: number
@@ -13,8 +14,12 @@ export class Vec2 {
     return new Vec2(this.x + v.x, this.y + v.y)
   }
 
-  sub(v: Vec2): Vec2 {
-    return new Vec2(this.x - v.x, this.y - v.y)
+  sub(v: Vec2 | number): Vec2 {
+    if (typeof v === 'number') {
+      return new Vec2(this.x - v, this.y - v)
+    } else {
+      return new Vec2(this.x - v.x, this.y - v.y)
+    }
   }
 
   mul(s: number): Vec2 {
@@ -37,5 +42,9 @@ export class Vec2 {
 
   floor(): Vec2 {
     return new Vec2(Math.floor(this.x), Math.floor(this.y))
+  }
+
+  mod(m: number): Vec2 {
+    return new Vec2(mod(this.x, m), mod(this.y, m))
   }
 }

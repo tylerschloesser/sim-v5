@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import styles from './app.module.scss'
-import { mod, radiansToDegrees } from './math.js'
+import { radiansToDegrees } from './math.js'
 import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
@@ -145,7 +145,7 @@ function* iterateGridLines(viewport: Vec2): Generator<{
   }
 }
 
-function svgTranslate(x: number, y: number): string {
+function svgTranslate({ x, y }: Vec2): string {
   return `translate(${x.toFixed(2)} ${y.toFixed(2)})`
 }
 
@@ -228,10 +228,11 @@ function RenderGrid({
     <g
       visibility={SHOW_GRID ? undefined : 'hidden'}
       transform={svgTranslate(
-        mod(viewport.x / 2 - camera.x * scale, scale) -
-          scale,
-        mod(viewport.y / 2 - camera.y * scale, scale) -
-          scale,
+        viewport
+          .div(2)
+          .sub(camera.mul(scale))
+          .mod(scale)
+          .sub(scale),
       )}
       strokeWidth={2}
       stroke="hsl(0, 0%, 10%)"
@@ -270,8 +271,7 @@ function RenderWorld({
   return (
     <g
       transform={svgTranslate(
-        viewport.x / 2 - camera.x * scale,
-        viewport.y / 2 - camera.y * scale,
+        viewport.div(2).sub(camera.mul(scale)),
       )}
     >
       {Array.from(iterateCells(world)).map(
@@ -288,10 +288,7 @@ function RenderWorld({
       )}
       <g>
         <circle
-          transform={svgTranslate(
-            player.x * scale,
-            player.y * scale,
-          )}
+          transform={svgTranslate(player.mul(scale))}
           x={0}
           y={0}
           r={scale / 2}
@@ -300,10 +297,7 @@ function RenderWorld({
         {velocity.len() !== 0 && (
           <g stroke="red" fill="transparent">
             <line
-              transform={svgTranslate(
-                player.x * scale,
-                player.y * scale,
-              )}
+              transform={svgTranslate(player.mul(scale))}
               x1={0}
               y1={0}
               x2={velocity.x * scale}
@@ -343,7 +337,7 @@ function SmoothRect({
 }: SmoothRectProps) {
   return (
     <rect
-      transform={svgTranslate(translate.x, translate.y)}
+      transform={svgTranslate(translate)}
       x={x}
       y={y}
       width={width}
