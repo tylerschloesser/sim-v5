@@ -14,6 +14,8 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
+const SHOW_GRID: boolean = false
+
 type PointerId = number
 const pointerEventCache = new Map<PointerId, PointerEvent>()
 
@@ -132,6 +134,7 @@ export function App() {
       {viewport && (
         <>
           <g
+            visibility={SHOW_GRID ? undefined : 'hidden'}
             ref={(ref) => (refs.current.grid = ref)}
             transform={translate(
               mod(viewport.x / 2 - camera.x * size, size) -

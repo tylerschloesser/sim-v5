@@ -25,8 +25,8 @@ export function initWorld(): World {
       } else if (dist < 7) {
         const id = `${x + tx}.${y + ty}`
         const hue = 120
-        const saturation = 30 + Math.random() * 20
-        const lightness = 40 + Math.random() * 20
+        const saturation = 40 + Math.random() * 10
+        const lightness = 20 + Math.random() * 10
         const color = `hsl(${hue}, ${saturation.toFixed(2)}%, ${lightness.toFixed(2)}%)`
         cells[id] = {
           type: CellType.enum.Grass,
