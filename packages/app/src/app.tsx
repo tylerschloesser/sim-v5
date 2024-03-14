@@ -25,13 +25,16 @@ export function App() {
   const camera = player
 
   // prettier-ignore
-  const velocity  = useRef<Vec2>(new Vec2(0, 0))
+  const [velocity, setVelocity]  = useState<Vec2>(new Vec2(0, 0))
 
   const scale = viewport
     ? Math.min(viewport.x, viewport.y) / 10
     : 0
 
   useEffect(() => {
+    if (scale === 0) {
+      return
+    }
     const start = drag?.events.at(0)?.position
     let end = drag?.events.at(-1)?.position
     if (end === start) {
@@ -40,30 +43,28 @@ export function App() {
     const dir = (
       start && end ? end.sub(start) : new Vec2(0, 0)
     ).div(scale)
-    velocity.current.x = dir.x
-    velocity.current.y = dir.y
+    setVelocity(dir)
   }, [drag, scale])
 
+  const lastStep = useRef(0)
   useEffect(() => {
+    if (velocity.len() === 0) {
+      return
+    }
     let handle: number
-    let last = self.performance.now()
+    lastStep.current = self.performance.now()
     function step() {
       const now = self.performance.now()
-      const elapsed = (now - last) / 1000
-      last = now
-      const speed = velocity.current.len()
-      if (speed > 0) {
-        setPlayer((prev) =>
-          prev.add(velocity.current.mul(elapsed)),
-        )
-      }
+      const elapsed = (now - lastStep.current) / 1000
+      lastStep.current = now
+      setPlayer((prev) => prev.add(velocity.mul(elapsed)))
       handle = self.requestAnimationFrame(step)
     }
     handle = self.requestAnimationFrame(step)
     return () => {
       self.cancelAnimationFrame(handle)
     }
-  }, [])
+  }, [velocity])
 
   const world = useMemo(initWorld, [])
   const svg = useRef<SVGSVGElement>(null)
@@ -96,6 +97,7 @@ export function App() {
             scale={scale}
             world={world}
             player={player}
+            velocity={velocity}
           />
           <RenderDrag drag={drag} scale={scale} />
         </>
@@ -251,6 +253,7 @@ interface RenderWorldProps {
   scale: number
   world: World
   player: Vec2
+  velocity: Vec2
 }
 function RenderWorld({
   viewport,
@@ -258,6 +261,7 @@ function RenderWorld({
   scale,
   world,
   player,
+  velocity,
 }: RenderWorldProps) {
   return (
     <g
@@ -278,16 +282,14 @@ function RenderWorld({
           />
         ),
       )}
-      <circle
+      <g
         transform={translate(
           player.x * scale,
           player.y * scale,
         )}
-        x={0}
-        y={0}
-        r={scale / 2}
-        fill="blue"
-      />
+      >
+        <circle x={0} y={0} r={scale / 2} fill="blue" />
+      </g>
     </g>
   )
 }

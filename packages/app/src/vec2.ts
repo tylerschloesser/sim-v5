@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 export class Vec2 {
   x: number
   y: number
@@ -20,6 +22,7 @@ export class Vec2 {
   }
 
   div(s: number): Vec2 {
+    invariant(s !== 0)
     return new Vec2(this.x / s, this.y / s)
   }
 
