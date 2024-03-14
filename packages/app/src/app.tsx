@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import styles from './app.module.scss'
-import { mod } from './math.js'
+import { mod, radiansToDegrees } from './math.js'
 import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
@@ -237,15 +237,14 @@ function RenderWorld({
           />
         ),
       )}
-      <rect
+      <circle
         transform={translate(
           player.x * size,
           player.y * size,
         )}
-        x={-0.5 * size}
-        y={-0.5 * size}
-        width={size}
-        height={size}
+        x={0}
+        y={0}
+        r={size / 2}
         fill="blue"
       />
     </g>
@@ -257,7 +256,6 @@ interface RenderPointerProps {
   size: number
 }
 function RenderDrag({ drag, size }: RenderPointerProps) {
-  console.log(drag)
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
   if (end === start) {
@@ -265,7 +263,9 @@ function RenderDrag({ drag, size }: RenderPointerProps) {
   }
 
   const dir = start && end ? end.sub(start) : null
-  const angle = dir ? Math.atan2(dir.y, dir.x) : null
+  const angle = dir
+    ? radiansToDegrees(Math.atan2(dir.y, dir.x))
+    : null
   const dist = dir?.len() ?? null
 
   if (!start) return null
@@ -286,7 +286,19 @@ function RenderDrag({ drag, size }: RenderPointerProps) {
         )}
       </g>
       {dist && dist > 1 && (
-        <circle cx={100} cy={100} r={25} stroke="red" />
+        <g
+          stroke="red"
+          fill="transparent"
+          transform="translate(100 100)"
+        >
+          <circle cx={0} cy={0} r={25} />
+          <circle
+            cx={0}
+            cy={0}
+            transform={`rotate(${angle}) translate(25 0)`}
+            r={5}
+          />
+        </g>
       )}
     </>
   )
