@@ -110,6 +110,7 @@ function move(
   position: Vec2,
   velocity: Vec2,
   elapsed: number,
+  // eslint-disable-next-line
   world: World,
 ): Vec2 {
   if (ALLOW_MOVE) {
