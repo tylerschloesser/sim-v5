@@ -7,7 +7,9 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
+const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
+
 type PointerId = number
 
 interface Drag {
@@ -19,12 +21,9 @@ function useVelocity(
   scale: number | null,
   drag: Drag | null,
 ): Vec2 {
-  // prettier-ignore
-  const [velocity, setVelocity]  = useState<Vec2>(new Vec2(0, 0))
-
-  useEffect(() => {
+  return useMemo<Vec2>(() => {
     if (scale === null) {
-      return
+      return new Vec2(0, 0)
     }
     const start = drag?.events.at(0)?.position
     let end = drag?.events.at(-1)?.position
@@ -33,10 +32,9 @@ function useVelocity(
     }
     const dir =
       start && end ? end.sub(start) : new Vec2(0, 0)
-    setVelocity(dir.div(scale))
-  }, [drag, scale])
 
-  return velocity
+    return dir.div(scale)
+  }, [drag, scale])
 }
 
 function move(
@@ -45,8 +43,12 @@ function move(
   elapsed: number,
   world: World,
 ): Vec2 {
-  const dir = velocity.mul(elapsed)
-  return position.add(dir)
+  if (ALLOW_MOVE) {
+    const dir = velocity.mul(elapsed)
+    return position.add(dir)
+  } else {
+    return position
+  }
 }
 
 // eslint-disable-next-line
