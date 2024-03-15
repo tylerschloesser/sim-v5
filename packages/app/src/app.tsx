@@ -39,16 +39,8 @@ function useVelocity(
   }, [drag, scale])
 }
 
-function usePath(
-  viewport: Vec2 | null,
-  scale: number | null,
-  player: Vec2,
-  velocity: Vec2,
-): Path {
+function usePath(player: Vec2, velocity: Vec2): Path {
   return useMemo(() => {
-    if (viewport === null || scale === null) {
-      return []
-    }
     if (velocity.len() === 0) {
       return []
     }
@@ -58,7 +50,7 @@ function usePath(
       v: velocity,
     })
     return path
-  }, [viewport, scale, player, velocity])
+  }, [player, velocity])
 }
 
 function move(
@@ -143,7 +135,7 @@ export function App() {
   const velocity = useVelocity(scale, drag)
   const player = usePlayer(velocity, world)
   const camera = player
-  const path = usePath(viewport, scale, player, velocity)
+  const path = usePath(player, velocity)
   const svg = useRef<SVGSVGElement>(null)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
