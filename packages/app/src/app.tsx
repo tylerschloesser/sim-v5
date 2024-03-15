@@ -44,11 +44,64 @@ function usePath(player: Vec2, velocity: Vec2): Path {
     if (velocity.len() === 0) {
       return []
     }
+
+    const dir = velocity.norm()
+    const stepX = Math.sign(dir.x)
+    const stepY = Math.sign(dir.y)
+
+    let { x, y } = player.floor()
+
+    x += stepX
+    y += stepY
+
     const path: Path = []
-    path.push({
-      u: player,
-      v: velocity,
-    })
+
+    let u = player
+
+    const total = velocity.len()
+    let traveled = 0
+
+    while (traveled !== total) {
+      invariant(x === Math.floor(x))
+      invariant(y === Math.floor(y))
+
+      const tMaxX =
+        dir.x === 0
+          ? Number.POSITIVE_INFINITY
+          : (x - u.x) / dir.x
+
+      const tMaxY =
+        dir.y === 0
+          ? Number.POSITIVE_INFINITY
+          : (y - u.y) / dir.y
+
+      invariant(tMaxX >= 0)
+      invariant(tMaxY >= 0)
+
+      let dist = Math.min(tMaxX, tMaxY)
+
+      if (traveled + dist > total) {
+        dist = total - traveled
+        traveled = total
+      } else {
+        traveled += dist
+      }
+
+      invariant(dist >= 0)
+
+      const v = dir.mul(dist)
+
+      path.push({ u, v })
+
+      if (tMaxX < tMaxY) {
+        x += stepX
+      } else {
+        y += stepY
+      }
+
+      u = u.add(v)
+    }
+
     return path
   }, [player, velocity])
 }
@@ -363,11 +416,12 @@ function RenderWorld({
           <g stroke="red" fill="transparent">
             {path.map(({ u, v }, i) => (
               <line
+                stroke={i % 2 === 0 ? 'red' : 'cyan'}
                 key={i}
                 x1={u.x * scale}
                 y1={u.y * scale}
-                x2={v.x * scale}
-                y2={v.y * scale}
+                x2={(u.x + v.x) * scale}
+                y2={(u.y + v.y) * scale}
               />
             ))}
             <SmoothRect
