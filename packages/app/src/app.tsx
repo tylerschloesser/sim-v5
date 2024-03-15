@@ -424,6 +424,16 @@ function RenderWorld({
                 y2={(u.y + v.y) * scale}
               />
             ))}
+            {path.map(({ u }, i) => (
+              <rect
+                stroke={i % 2 === 0 ? 'red' : 'cyan'}
+                key={i}
+                x={Math.floor(u.x) * scale}
+                y={Math.floor(u.y) * scale}
+                width={scale}
+                height={scale}
+              />
+            ))}
             <SmoothRect
               scale={scale}
               translate={path
