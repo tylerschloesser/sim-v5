@@ -46,22 +46,32 @@ function move(
   world: World,
 ): Vec2 {
   const dir = velocity.mul(elapsed)
+  return position.add(dir)
+}
 
-  const start = position
-  const end = position.add(dir)
+// eslint-disable-next-line
+function getIntersection(
+  p: Vec2,
+  r: Vec2,
+  q: Vec2,
+  s: Vec2,
+): Vec2 | null {
+  invariant(!(r.cross(s) === 0 && q.sub(p).cross(r) === 0))
 
-  if (start.floor().equals(end.floor())) {
-    return end
+  if (r.cross(s) === 0 && q.sub(p).cross(r) !== 0) {
+    // parallel and non-intersecting
+    return null
   }
 
-  const endCellId = `${end.floor().x}.${end.floor().y}`
-  const endCell = world.cells[endCellId]
-
-  if (endCell?.type === CellType.enum.Grass) {
-    return end
+  if (r.cross(s) !== 0) {
+    const t = q.sub(p).cross(s) / r.cross(s)
+    const u = q.sub(p).cross(r) / r.cross(s)
+    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+      return p.add(r.mul(t))
+    }
   }
 
-  return start
+  return null
 }
 
 function usePlayer(velocity: Vec2, world: World): Vec2 {

@@ -56,4 +56,8 @@ export class Vec2 {
   equals(v: Vec2): boolean {
     return this.x === v.x && this.y === v.y
   }
+
+  cross(v: Vec2): number {
+    return this.x * v.y - this.y * v.x
+  }
 }
