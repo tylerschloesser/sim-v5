@@ -52,12 +52,12 @@ function usePath(
     if (velocity.len() === 0) {
       return []
     }
-    return [
-      {
-        u: player,
-        v: velocity,
-      },
-    ]
+    const path: Path = []
+    path.push({
+      u: player,
+      v: velocity,
+    })
+    return path
   }, [viewport, scale, player, velocity])
 }
 
