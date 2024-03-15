@@ -7,7 +7,7 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
-const ALLOW_MOVE: boolean = true
+const ALLOW_MOVE: boolean = false
 const SHOW_GRID: boolean = true
 
 type PointerId = number
@@ -16,6 +16,8 @@ interface Drag {
   pointerId: PointerId
   events: { time: number; position: Vec2 }[]
 }
+
+type Path = Array<{ u: Vec2; v: Vec2 }>
 
 function useVelocity(
   scale: number | null,
@@ -35,6 +37,28 @@ function useVelocity(
 
     return dir.div(scale)
   }, [drag, scale])
+}
+
+function usePath(
+  viewport: Vec2 | null,
+  scale: number | null,
+  player: Vec2,
+  velocity: Vec2,
+): Path {
+  return useMemo(() => {
+    if (viewport === null || scale === null) {
+      return []
+    }
+    if (velocity.len() === 0) {
+      return []
+    }
+    return [
+      {
+        u: player,
+        v: velocity,
+      },
+    ]
+  }, [viewport, scale, player, velocity])
 }
 
 function move(
@@ -119,6 +143,7 @@ export function App() {
   const velocity = useVelocity(scale, drag)
   const player = usePlayer(velocity, world)
   const camera = player
+  const path = usePath(viewport, scale, player, velocity)
   const svg = useRef<SVGSVGElement>(null)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
@@ -149,7 +174,7 @@ export function App() {
             scale={scale}
             world={world}
             player={player}
-            velocity={velocity}
+            path={path}
           />
           <RenderDrag drag={drag} scale={scale} />
         </>
@@ -306,7 +331,7 @@ interface RenderWorldProps {
   scale: number
   world: World
   player: Vec2
-  velocity: Vec2
+  path: Path
 }
 function RenderWorld({
   viewport,
@@ -314,7 +339,7 @@ function RenderWorld({
   scale,
   world,
   player,
-  velocity,
+  path,
 }: RenderWorldProps) {
   return (
     <g
@@ -342,19 +367,22 @@ function RenderWorld({
           r={scale / 2}
           fill="blue"
         />
-        {velocity.len() !== 0 && (
+        {path.length && (
           <g stroke="red" fill="transparent">
-            <line
-              transform={svgTranslate(player.mul(scale))}
-              x1={0}
-              y1={0}
-              x2={velocity.x * scale}
-              y2={velocity.y * scale}
-            />
+            {path.map(({ u, v }, i) => (
+              <line
+                key={i}
+                x1={u.x * scale}
+                y1={u.y * scale}
+                x2={v.x * scale}
+                y2={v.y * scale}
+              />
+            ))}
             <SmoothRect
               scale={scale}
-              translate={player
-                .add(velocity)
+              translate={path
+                .at(-1)!
+                .u.add(path.at(-1)!.v)
                 .floor()
                 .mul(scale)}
               x={0}
@@ -362,7 +390,6 @@ function RenderWorld({
               width={scale}
               height={scale}
             />
-            <rect />
           </g>
         )}
       </g>
