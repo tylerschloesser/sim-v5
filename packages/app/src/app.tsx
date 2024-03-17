@@ -35,6 +35,9 @@ function useVelocity(
     const dir =
       start && end ? end.sub(start) : new Vec2(0, 0)
 
+    // invert y direction
+    dir.y *= -1
+
     return dir.div(scale)
   }, [drag, scale])
 }
@@ -46,6 +49,7 @@ function usePath(player: Vec2, velocity: Vec2): Path {
     }
 
     const dir = velocity.norm()
+
     const stepX = Math.sign(dir.x)
     const stepY = Math.sign(dir.y)
 
@@ -268,6 +272,20 @@ function svgTranslate({ x, y }: Vec2): string {
   return `translate(${x.toFixed(2)} ${y.toFixed(2)})`
 }
 
+function svgScale({ x, y }: Vec2): string {
+  return `scale(${x.toFixed(2)} ${y.toFixed(2)})`
+}
+
+function svgTransform({
+  translate,
+  scale,
+}: {
+  translate: Vec2
+  scale: Vec2
+}): string {
+  return `${svgTranslate(translate)} ${svgScale(scale)}`
+}
+
 function* iterateCells(world: World): Generator<{
   id: string
   type: CellType
@@ -349,7 +367,7 @@ function RenderGrid({
       transform={svgTranslate(
         viewport
           .div(2)
-          .sub(camera.mul(scale))
+          .sub(new Vec2(camera.x, camera.y * -1).mul(scale))
           .mod(scale)
           .sub(scale),
       )}
@@ -389,9 +407,14 @@ function RenderWorld({
 }: RenderWorldProps) {
   return (
     <g
-      transform={svgTranslate(
-        viewport.div(2).sub(camera.mul(scale)),
-      )}
+      transform={svgTransform({
+        translate: viewport
+          .div(2)
+          .sub(
+            new Vec2(camera.x, camera.y * -1).mul(scale),
+          ),
+        scale: new Vec2(1, -1),
+      })}
     >
       {Array.from(iterateCells(world)).map(
         ({ id, x, y, color }) => (
@@ -546,6 +569,7 @@ function RenderDrag({ drag, scale }: RenderPointerProps) {
   }
 
   const dir = start && end ? end.sub(start) : null
+
   const angle = dir
     ? radiansToDegrees(Math.atan2(dir.y, dir.x))
     : null
