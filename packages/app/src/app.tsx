@@ -12,6 +12,8 @@ const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = true
 const SHOW_TARGET_CELL: boolean = false
 
+const INITIAL_PLAYER = new Vec2(0, 0)
+
 type PointerId = number
 
 interface Drag {
@@ -161,7 +163,7 @@ function getIntersection(
 }
 
 function usePlayer(velocity: Vec2, world: World): Vec2 {
-  const [player, setPlayer] = useState<Vec2>(new Vec2(0, 0))
+  const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
     if (velocity.len() === 0) {
