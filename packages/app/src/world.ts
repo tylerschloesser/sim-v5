@@ -40,6 +40,10 @@ export function initWorld(): World {
     type: CellType.enum.Stone,
     color: 'hsl(0,0%,20%)',
   }
+  cells[`${1}.${1}`] = {
+    type: CellType.enum.Stone,
+    color: 'hsl(0,0%,20%)',
+  }
 
   return { cells }
 }
