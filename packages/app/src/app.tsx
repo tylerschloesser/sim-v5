@@ -581,8 +581,9 @@ function RenderDrag({ drag, scale }: RenderDragProps) {
     dir.y *= -1
   }
 
+  // multiply by -1 because atan2 measures counter-clockwise
   const angle = dir
-    ? radiansToDegrees(Math.atan2(dir.y, dir.x)) * -1 // TODO why inverse?
+    ? radiansToDegrees(Math.atan2(dir.y, dir.x)) * -1
     : null
   const dist = dir?.len() ?? null
 
