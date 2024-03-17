@@ -10,6 +10,7 @@ import { initWorld } from './world.js'
 const ALLOW_MOVE: boolean = false
 const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = true
+const SHOW_TARGET_CELL: boolean = false
 
 type PointerId = number
 
@@ -461,7 +462,7 @@ function RenderWorld({
             ))}
           </g>
         )}
-        {path.length && (
+        {SHOW_TARGET_CELL && path.length && (
           <g stroke="red" fill="transparent">
             <SmoothRect
               scale={scale}
