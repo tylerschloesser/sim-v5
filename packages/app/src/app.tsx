@@ -55,10 +55,11 @@ function usePath(player: Vec2, velocity: Vec2): Path {
     const stepX = Math.sign(dir.x)
     const stepY = Math.sign(dir.y)
 
-    let { x, y } = player.floor()
+    // let { x, y } = player.floor()
+    let { x, y } = player
 
-    x += stepX
-    y += stepY
+    // x += stepX
+    // y += stepY
 
     const path: Path = []
 
@@ -68,23 +69,41 @@ function usePath(player: Vec2, velocity: Vec2): Path {
     let traveled = 0
 
     while (traveled !== total) {
-      invariant(x === Math.floor(x))
-      invariant(y === Math.floor(y))
+      // invariant(x === Math.floor(x))
+      // invariant(y === Math.floor(y))
+
+      // const tMaxX =
+      //   dir.x === 0
+      //     ? Number.POSITIVE_INFINITY
+      //     : (x - u.x) / dir.x
+
+      // const tMaxY =
+      //   dir.y === 0
+      //     ? Number.POSITIVE_INFINITY
+      //     : (y - u.y) / dir.y
 
       const tMaxX =
         dir.x === 0
           ? Number.POSITIVE_INFINITY
-          : (x - u.x) / dir.x
+          : stepX - (x % 1)
 
       const tMaxY =
         dir.y === 0
           ? Number.POSITIVE_INFINITY
-          : (y - u.y) / dir.y
+          : stepY - (y % 1)
 
-      invariant(tMaxX >= 0)
-      invariant(tMaxY >= 0)
+      // invariant(tMaxX >= 0)
+      // invariant(tMaxY >= 0)
+      //
 
-      let dist = Math.min(tMaxX, tMaxY)
+      let dist
+      if (Math.abs(tMaxX) < Math.abs(tMaxY)) {
+        dist = Math.abs(tMaxX)
+        x += stepX
+      } else {
+        dist = Math.abs(tMaxY)
+        y += stepY
+      }
 
       if (traveled + dist > total) {
         dist = total - traveled
@@ -98,12 +117,6 @@ function usePath(player: Vec2, velocity: Vec2): Path {
       const v = dir.mul(dist)
 
       path.push({ u, v })
-
-      if (tMaxX < tMaxY) {
-        x += stepX
-      } else {
-        y += stepY
-      }
 
       u = u.add(v)
     }
