@@ -85,24 +85,24 @@ function usePath(player: Vec2, velocity: Vec2): Path {
       const tMaxX =
         dir.x === 0
           ? Number.POSITIVE_INFINITY
-          : stepX - (x % 1)
+          : Math.abs((stepX - (x % 1)) / dir.x)
 
       const tMaxY =
         dir.y === 0
           ? Number.POSITIVE_INFINITY
-          : stepY - (y % 1)
+          : Math.abs((stepY - (y % 1)) / dir.y)
 
       // invariant(tMaxX >= 0)
       // invariant(tMaxY >= 0)
       //
 
       let dist
-      if (Math.abs(tMaxX) < Math.abs(tMaxY)) {
-        dist = Math.abs(tMaxX)
-        x += stepX
+      if (tMaxX < tMaxY) {
+        dist = tMaxX
+        x = Math.round(x + stepX - (x % 1))
       } else {
-        dist = Math.abs(tMaxY)
-        y += stepY
+        dist = tMaxY
+        y = Math.round(y + stepY - (y % 1))
       }
 
       if (traveled + dist > total) {
@@ -119,8 +119,14 @@ function usePath(player: Vec2, velocity: Vec2): Path {
       path.push({ u, v })
 
       u = u.add(v)
+      if (Math.abs(tMaxX) < Math.abs(tMaxY)) {
+        u.x = Math.round(u.x)
+      } else {
+        u.y = Math.round(u.y)
+      }
     }
 
+    console.log(path)
     return path
   }, [player, velocity])
 }
