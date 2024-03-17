@@ -44,7 +44,11 @@ function useVelocity(
   }, [drag, scale])
 }
 
-function usePath(player: Vec2, velocity: Vec2): Path {
+function usePath(
+  player: Vec2,
+  velocity: Vec2,
+  debug: boolean,
+): Path {
   return useMemo(() => {
     if (velocity.len() === 0) {
       return []
@@ -126,9 +130,8 @@ function usePath(player: Vec2, velocity: Vec2): Path {
       }
     }
 
-    console.log(path)
     return path
-  }, [player, velocity])
+  }, [player, velocity, debug])
 }
 
 function move(
@@ -201,6 +204,30 @@ function usePlayer(velocity: Vec2, world: World): Vec2 {
   return player
 }
 
+function useDebug() {
+  const [debug, setDebug] = useState<boolean>(false)
+  useEffect(() => {
+    const controller = new AbortController()
+    const { signal } = controller
+    window.addEventListener(
+      'keyup',
+      (ev) => {
+        if (ev.key === ' ') {
+          setDebug((prev) => !prev)
+        }
+      },
+      { signal },
+    )
+    return () => {
+      controller.abort()
+    }
+  }, [])
+  useEffect(() => {
+    console.log('debug:', debug)
+  }, [debug])
+  return debug
+}
+
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
@@ -209,13 +236,14 @@ export function App() {
     ? Math.min(viewport.x, viewport.y) / 10
     : null
 
+  const svg = useRef<SVGSVGElement>(null)
   const world = useMemo(initWorld, [])
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
   const player = usePlayer(velocity, world)
   const camera = player
-  const path = usePath(player, velocity)
-  const svg = useRef<SVGSVGElement>(null)
+  const debug = useDebug()
+  const path = usePath(player, velocity, debug)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
