@@ -7,11 +7,11 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
-const ALLOW_MOVE: boolean = false
+const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = true
 const SHOW_TARGET_CELL: boolean = false
-const INITIAL_PLAYER = new Vec2(1.5, 1.5)
+const INITIAL_PLAYER = new Vec2(0, 0)
 
 type PointerId = number
 
@@ -45,19 +45,10 @@ function useVelocity(
   }, [drag, scale])
 }
 
-function usePath(
-  player: Vec2,
-  velocity: Vec2,
-  debug: boolean,
-): Path {
+function usePath(player: Vec2, velocity: Vec2): Path {
   return useMemo(() => {
     if (velocity.len() === 0) {
       return []
-    }
-
-    if (debug) {
-      // eslint-disable-next-line
-      debugger
     }
 
     const dir = velocity.norm()
@@ -120,7 +111,7 @@ function usePath(
     }
 
     return path
-  }, [player, velocity, debug])
+  }, [player, velocity])
 }
 
 function move(
@@ -232,7 +223,7 @@ export function App() {
   const player = usePlayer(velocity, world)
   const camera = player
   const debug = useDebug()
-  const path = usePath(player, velocity, debug)
+  const path = usePath(player, velocity)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
