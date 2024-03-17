@@ -9,7 +9,7 @@ import { initWorld } from './world.js'
 
 const ALLOW_MOVE: boolean = false
 const SHOW_GRID: boolean = true
-const SHOW_PATH: boolean = false
+const SHOW_PATH: boolean = true
 
 type PointerId = number
 
@@ -583,6 +583,18 @@ function RenderDrag({ drag, scale }: RenderPointerProps) {
   if (!start) return null
   return (
     <>
+      {dir && (
+        <text
+          fontSize={16}
+          fontFamily="system-ui"
+          fill="white"
+          x="100%"
+          y="16"
+          textAnchor="end"
+        >
+          {`${dir.x.toFixed(2)}.${dir.y.toFixed(2)}`}
+        </text>
+      )}
       <g stroke="blue" fill="transparent">
         {end && (
           <line
