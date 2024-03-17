@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import styles from './app.module.scss'
-import { radiansToDegrees } from './math.js'
+import { mod, radiansToDegrees } from './math.js'
 import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
@@ -11,8 +11,7 @@ const ALLOW_MOVE: boolean = false
 const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = true
 const SHOW_TARGET_CELL: boolean = false
-
-const INITIAL_PLAYER = new Vec2(0, 0)
+const INITIAL_PLAYER = new Vec2(1.5, 1.5)
 
 type PointerId = number
 
@@ -74,12 +73,12 @@ function usePath(
       const tMaxX =
         dir.x === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepX - (x % 1)) / dir.x)
+          : Math.abs((stepX - mod(x, stepX)) / dir.x)
 
       const tMaxY =
         dir.y === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepY - (y % 1)) / dir.y)
+          : Math.abs((stepY - mod(y, stepY)) / dir.y)
 
       let dist
       if (tMaxX < tMaxY) {
@@ -87,6 +86,8 @@ function usePath(
       } else {
         dist = tMaxY
       }
+
+      invariant(dist > 0)
 
       if (traveled + dist > total) {
         dist = total - traveled
