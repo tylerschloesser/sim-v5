@@ -230,7 +230,7 @@ export function App() {
             player={player}
             path={path}
           />
-          <RenderVelocity drag={drag} scale={scale} />
+          <RenderDrag drag={drag} scale={scale} />
         </>
       )}
     </svg>
@@ -565,14 +565,11 @@ function SmoothRect({
   )
 }
 
-interface RenderVelocityProps {
+interface RenderDragProps {
   drag: Drag | null
   scale: number
 }
-function RenderVelocity({
-  drag,
-  scale,
-}: RenderVelocityProps) {
+function RenderDrag({ drag, scale }: RenderDragProps) {
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
   if (end && start && end.equals(start)) {
