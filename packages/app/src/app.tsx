@@ -19,7 +19,7 @@ interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
-type Path = Array<{ u: Vec2; v: Vec2 }>
+type Path = Array<{ u: Vec2; v: Vec2; cell: Vec2 }>
 
 function useVelocity(
   scale: number | null,
@@ -123,7 +123,12 @@ function usePath(
 
       const v = dir.mul(dist)
 
-      path.push({ u, v })
+      const cell = new Vec2(
+        v.x < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
+        v.y < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
+      )
+
+      path.push({ u, v, cell })
 
       u = u.add(v)
 
@@ -506,12 +511,12 @@ function RenderWorld({
                 y2={(u.y + v.y) * scale}
               />
             ))}
-            {path.map(({ u }, i) => (
+            {path.map(({ cell }, i) => (
               <rect
                 stroke={i % 2 === 0 ? 'red' : 'cyan'}
                 key={i}
-                x={Math.floor(u.x) * scale}
-                y={Math.floor(u.y) * scale}
+                x={cell.x * scale}
+                y={cell.y * scale}
                 width={scale}
                 height={scale}
               />
