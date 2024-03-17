@@ -7,7 +7,7 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
-const ALLOW_MOVE: boolean = false
+const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
 
 type PointerId = number
