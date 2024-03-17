@@ -60,37 +60,15 @@ function usePath(
     }
 
     const dir = velocity.norm()
-
     const stepX = Math.sign(dir.x)
     const stepY = Math.sign(dir.y)
-
-    // let { x, y } = player.floor()
     let { x, y } = player
-
-    // x += stepX
-    // y += stepY
-
     const path: Path = []
-
     let u = player
-
     const total = velocity.len()
     let traveled = 0
 
     while (traveled !== total) {
-      // invariant(x === Math.floor(x))
-      // invariant(y === Math.floor(y))
-
-      // const tMaxX =
-      //   dir.x === 0
-      //     ? Number.POSITIVE_INFINITY
-      //     : (x - u.x) / dir.x
-
-      // const tMaxY =
-      //   dir.y === 0
-      //     ? Number.POSITIVE_INFINITY
-      //     : (y - u.y) / dir.y
-
       const tMaxX =
         dir.x === 0
           ? Number.POSITIVE_INFINITY
@@ -100,10 +78,6 @@ function usePath(
         dir.y === 0
           ? Number.POSITIVE_INFINITY
           : Math.abs((stepY - (y % 1)) / dir.y)
-
-      // invariant(tMaxX >= 0)
-      // invariant(tMaxY >= 0)
-      //
 
       let dist
       if (tMaxX < tMaxY) {
@@ -120,9 +94,7 @@ function usePath(
       }
 
       invariant(dist >= 0)
-
       const v = dir.mul(dist)
-
       const cell = new Vec2(
         v.x < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
         v.y < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
