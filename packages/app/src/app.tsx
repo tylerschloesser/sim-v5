@@ -54,6 +54,11 @@ function usePath(
       return []
     }
 
+    if (debug) {
+      // eslint-disable-next-line
+      debugger
+    }
+
     const dir = velocity.norm()
 
     const stepX = Math.sign(dir.x)
@@ -103,10 +108,8 @@ function usePath(
       let dist
       if (tMaxX < tMaxY) {
         dist = tMaxX
-        x = Math.round(x + stepX - (x % 1))
       } else {
         dist = tMaxY
-        y = Math.round(y + stepY - (y % 1))
       }
 
       if (traveled + dist > total) {
@@ -123,10 +126,16 @@ function usePath(
       path.push({ u, v })
 
       u = u.add(v)
+
+      x += v.x
+      y += v.y
+
       if (Math.abs(tMaxX) < Math.abs(tMaxY)) {
         u.x = Math.round(u.x)
+        x = Math.round(x)
       } else {
         u.y = Math.round(u.y)
+        y = Math.round(y)
       }
     }
 
