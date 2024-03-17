@@ -108,8 +108,6 @@ function usePath(player: Vec2, velocity: Vec2): Path {
       u = u.add(v)
     }
 
-    console.log(path)
-
     return path
   }, [player, velocity])
 }
