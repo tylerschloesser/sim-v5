@@ -7,8 +7,9 @@ import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
-const ALLOW_MOVE: boolean = true
+const ALLOW_MOVE: boolean = false
 const SHOW_GRID: boolean = true
+const SHOW_PATH: boolean = false
 
 type PointerId = number
 
@@ -436,8 +437,8 @@ function RenderWorld({
           r={scale / 2}
           fill="blue"
         />
-        {path.length && (
-          <g stroke="red" fill="transparent">
+        {SHOW_PATH && path.length && (
+          <g fill="transparent">
             {path.map(({ u, v }, i) => (
               <line
                 stroke={i % 2 === 0 ? 'red' : 'cyan'}
@@ -458,6 +459,10 @@ function RenderWorld({
                 height={scale}
               />
             ))}
+          </g>
+        )}
+        {path.length && (
+          <g stroke="red" fill="transparent">
             <SmoothRect
               scale={scale}
               translate={path
