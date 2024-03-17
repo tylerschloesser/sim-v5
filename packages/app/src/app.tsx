@@ -108,6 +108,8 @@ function usePath(player: Vec2, velocity: Vec2): Path {
       u = u.add(v)
     }
 
+    console.log(path)
+
     return path
   }, [player, velocity])
 }
@@ -228,7 +230,7 @@ export function App() {
             player={player}
             path={path}
           />
-          <RenderDrag drag={drag} scale={scale} />
+          <RenderVelocity drag={drag} scale={scale} />
         </>
       )}
     </svg>
@@ -563,11 +565,14 @@ function SmoothRect({
   )
 }
 
-interface RenderPointerProps {
+interface RenderVelocityProps {
   drag: Drag | null
   scale: number
 }
-function RenderDrag({ drag, scale }: RenderPointerProps) {
+function RenderVelocity({
+  drag,
+  scale,
+}: RenderVelocityProps) {
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
   if (end && start && end.equals(start)) {
@@ -575,6 +580,9 @@ function RenderDrag({ drag, scale }: RenderPointerProps) {
   }
 
   const dir = start && end ? end.sub(start) : null
+  if (dir) {
+    dir.y *= -1
+  }
 
   const angle = dir
     ? radiansToDegrees(Math.atan2(dir.y, dir.x))
@@ -593,7 +601,7 @@ function RenderDrag({ drag, scale }: RenderPointerProps) {
           y="16"
           textAnchor="end"
         >
-          {`${dir.x.toFixed(2)}.${dir.y.toFixed(2)}`}
+          {`${dir.x.toFixed(2)},${dir.y.toFixed(2)}`}
         </text>
       )}
       <g stroke="blue" fill="transparent">
