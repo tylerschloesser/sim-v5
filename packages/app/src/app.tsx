@@ -582,7 +582,7 @@ function RenderDrag({ drag, scale }: RenderDragProps) {
   }
 
   const angle = dir
-    ? radiansToDegrees(Math.atan2(dir.y, dir.x))
+    ? radiansToDegrees(Math.atan2(dir.y, dir.x)) * -1 // TODO why inverse?
     : null
   const dist = dir?.len() ?? null
 
