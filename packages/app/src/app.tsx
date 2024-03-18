@@ -20,7 +20,13 @@ interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
-type Path = Array<{ a: Vec2; b: Vec2; v: Vec2; cell: Vec2 }>
+type Path = Array<{
+  a: Vec2
+  b: Vec2
+  v: Vec2
+  dist: number
+  cell: Vec2
+}>
 
 function useVelocity(
   scale: number | null,
@@ -140,7 +146,7 @@ function usePath(
 
       const b = u
 
-      path.push({ a, b, v: vCurrent, cell })
+      path.push({ a, b, v: vCurrent, dist, cell })
     }
 
     return path
