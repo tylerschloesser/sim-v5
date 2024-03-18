@@ -95,8 +95,8 @@ function usePath(
       invariant(dist >= 0)
       const v = dir.mul(dist)
       const cell = new Vec2(
-        v.x < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
-        v.y < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
+        stepX < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
+        stepY < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
       )
       invariant(cell.x % 1 === 0)
       invariant(cell.y % 1 === 0)
@@ -105,6 +105,31 @@ function usePath(
       const cellType = world.cells[cellId]?.type
 
       if (cellType !== CellType.enum.Grass) {
+        // let vModified: Vec2 | null = null
+
+        // if (Math.abs(v.x) > Math.abs(v.y)) {
+
+        //   // check if we can still move in the x direction
+
+        //   if (x % 1 === 0) {
+
+        //     const adjacent = new Vec2(
+        //       cell.x,
+        //       cell.y - stepY
+        //     )
+        //     const adjacentId = `${adjacent.x}.${adjacent.y}`
+        //     const adjacentType = world.cells[adjacentId]?.type
+
+        //     if (adjacentType === CellType.enum.Grass) {
+        //       // cannot move, both cells in the x direction are blocked
+        //       vModified = new Vec2(v.x, 0)
+        //     }
+
+        //   } else {
+        //     vModified = new Vec2(v.x)
+        //   }
+        // }
+
         break
       }
 
