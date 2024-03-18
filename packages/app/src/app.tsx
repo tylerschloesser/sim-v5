@@ -78,6 +78,8 @@ function usePath(
       let vCurrent: Vec2 | null = vNorm
 
       if (cellType !== CellType.enum.Grass) {
+        invariant(x % 1 === 0 || y % 1 === 0)
+
         const order: ('x' | 'y')[] =
           Math.abs(vNorm.x) > Math.abs(vNorm.y)
             ? ['x', 'y']
@@ -85,6 +87,7 @@ function usePath(
 
         for (const axis of order) {
           if (axis === 'x') {
+          } else {
           }
         }
 
