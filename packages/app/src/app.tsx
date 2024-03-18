@@ -144,7 +144,7 @@ function usePath(
         y = Math.round(y)
       }
 
-      const b = u
+      const b = a.add(v)
 
       path.push({ a, b, v: vCurrent, dist, cell })
     }
