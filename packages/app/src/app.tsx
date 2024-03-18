@@ -134,8 +134,6 @@ function move(
   position: Vec2,
   velocity: Vec2,
   elapsed: number,
-  // eslint-disable-next-line
-  world: World,
 ): Vec2 {
   if (ALLOW_MOVE) {
     const dir = velocity.mul(elapsed)
@@ -145,40 +143,19 @@ function move(
   }
 }
 
-// eslint-disable-next-line
-function getIntersection(
-  p: Vec2,
-  r: Vec2,
-  q: Vec2,
-  s: Vec2,
-): Vec2 | null {
-  invariant(!(r.cross(s) === 0 && q.sub(p).cross(r) === 0))
-
-  if (r.cross(s) === 0 && q.sub(p).cross(r) !== 0) {
-    // parallel and non-intersecting
-    return null
-  }
-
-  if (r.cross(s) !== 0) {
-    const t = q.sub(p).cross(s) / r.cross(s)
-    const u = q.sub(p).cross(r) / r.cross(s)
-    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
-      return p.add(r.mul(t))
-    }
-  }
-
-  return null
-}
-
-function usePlayer(
+function useMovePlayer(
+  setPlayer: React.Dispatch<React.SetStateAction<Vec2>>,
   velocity: Vec2,
-  world: World,
+  path: Path,
   debug: boolean,
-): Vec2 {
-  const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
+): void {
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
     if (debug) {
+      lastStep.current = null
+      return
+    }
+    if (!path.length) {
       lastStep.current = null
       return
     }
@@ -195,9 +172,7 @@ function usePlayer(
       invariant(lastStep.current !== null)
       const elapsed = (now - lastStep.current) / 1000
       lastStep.current = now
-      setPlayer((prev) =>
-        move(prev, velocity, elapsed, world),
-      )
+      setPlayer((prev) => move(prev, velocity, elapsed))
       handle = self.requestAnimationFrame(step)
     }
     handle = self.requestAnimationFrame(step)
@@ -205,7 +180,6 @@ function usePlayer(
       self.cancelAnimationFrame(handle)
     }
   }, [velocity, debug])
-  return player
 }
 
 const INITIAL_DEBUG = (() => {
@@ -255,9 +229,13 @@ export function App() {
   const world = useMemo(initWorld, [])
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
-  const player = usePlayer(velocity, world, debug)
-  const camera = player
+
+  const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
   const path = usePath(player, velocity, world)
+
+  useMovePlayer(setPlayer, velocity, path, debug)
+
+  const camera = player
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
