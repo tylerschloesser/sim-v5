@@ -1,5 +1,8 @@
+import Prando from 'prando'
 import { CellType, World } from './types.js'
 import { Vec2 } from './vec2.js'
+
+const rng = new Prando(0)
 
 export function initWorld(): World {
   const cells: World['cells'] = {}
@@ -13,7 +16,7 @@ export function initWorld(): World {
         const id = `${x}.${y}`
         const hue = 0
         const saturation = 0
-        const lightness = 20 + Math.random() * 20
+        const lightness = 20 + rng.next() * 20
         const color = `hsl(${hue}, ${saturation.toFixed(2)}%, ${lightness.toFixed(2)}%)`
         cells[id] = {
           type: CellType.enum.Stone,
@@ -22,8 +25,8 @@ export function initWorld(): World {
       } else if (dist < 7) {
         const id = `${x}.${y}`
         const hue = 120
-        const saturation = 40 + Math.random() * 10
-        const lightness = 20 + Math.random() * 10
+        const saturation = 40 + rng.next() * 10
+        const lightness = 20 + rng.next() * 10
         const color = `hsl(${hue}, ${saturation.toFixed(2)}%, ${lightness.toFixed(2)}%)`
         cells[id] = {
           type: CellType.enum.Grass,
