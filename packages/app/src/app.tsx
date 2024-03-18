@@ -75,19 +75,21 @@ function usePath(
       const cellId = `${cell.x}.${cell.y}`
       const cellType = world.cells[cellId]?.type
 
+      const vCurrent = vNorm
+
       if (cellType !== CellType.enum.Grass) {
         break
       }
 
       const tMaxX =
-        vNorm.x === 0
+        vCurrent.x === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepX - mod(x, stepX)) / vNorm.x)
+          : Math.abs((stepX - mod(x, stepX)) / vCurrent.x)
 
       const tMaxY =
-        vNorm.y === 0
+        vCurrent.y === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepY - mod(y, stepY)) / vNorm.y)
+          : Math.abs((stepY - mod(y, stepY)) / vCurrent.y)
 
       let dist
       if (tMaxX < tMaxY) {
@@ -106,7 +108,7 @@ function usePath(
       }
 
       invariant(dist >= 0)
-      const v = vNorm.mul(dist)
+      const v = vCurrent.mul(dist)
 
       path.push({ u, v, cell })
 
