@@ -12,7 +12,6 @@ const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = true
 const SHOW_TARGET_CELL: boolean = false
-const INITIAL_PLAYER = new Vec2(0, 0)
 
 type PointerId = number
 
@@ -226,11 +225,28 @@ function useDebug() {
   return debug
 }
 
+const INITIAL_PLAYER = (() => {
+  const value = localStorage.getItem('player')
+  if (value) {
+    const { x, y } = z
+      .strictObject({
+        x: z.number(),
+        y: z.number(),
+      })
+      .parse(JSON.parse(value))
+    return new Vec2(x, y)
+  }
+  return new Vec2(0, 0)
+})()
+
 function usePlayer(): [
   Vec2,
   React.Dispatch<React.SetStateAction<Vec2>>,
 ] {
   const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
+  useEffect(() => {
+    localStorage.setItem('player', JSON.stringify(player))
+  }, [player])
   return [player, setPlayer]
 }
 
