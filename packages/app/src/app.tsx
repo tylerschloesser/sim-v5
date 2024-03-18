@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
+import * as z from 'zod'
 import styles from './app.module.scss'
 import { mod, radiansToDegrees } from './math.js'
 import { CellType, World } from './types.js'
@@ -205,8 +206,16 @@ function usePlayer(
   return player
 }
 
+const INITIAL_DEBUG = (() => {
+  const value = localStorage.getItem('debug')
+  if (value) {
+    return z.boolean().parse(JSON.parse(value))
+  }
+  return false
+})()
+
 function useDebug() {
-  const [debug, setDebug] = useState<boolean>(false)
+  const [debug, setDebug] = useState<boolean>(INITIAL_DEBUG)
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
@@ -225,6 +234,7 @@ function useDebug() {
   }, [])
   useEffect(() => {
     console.log('debug:', debug)
+    localStorage.setItem('debug', JSON.stringify(debug))
   }, [debug])
   return debug
 }
