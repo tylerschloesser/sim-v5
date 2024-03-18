@@ -222,6 +222,7 @@ export function App() {
   const velocity = useVelocity(scale, drag)
   const player = usePlayer(velocity, world)
   const camera = player
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const debug = useDebug()
   const path = usePath(player, velocity)
   useResize(svg, setViewport)
