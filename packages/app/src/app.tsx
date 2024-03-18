@@ -146,16 +146,11 @@ function move(
 function useMovePlayer(
   setPlayer: React.Dispatch<React.SetStateAction<Vec2>>,
   velocity: Vec2,
-  path: Path,
   debug: boolean,
 ): void {
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
     if (debug) {
-      lastStep.current = null
-      return
-    }
-    if (!path.length) {
       lastStep.current = null
       return
     }
@@ -233,7 +228,7 @@ export function App() {
   const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
   const path = usePath(player, velocity, world)
 
-  useMovePlayer(setPlayer, velocity, path, debug)
+  useMovePlayer(setPlayer, velocity, debug)
 
   const camera = player
   useResize(svg, setViewport)
