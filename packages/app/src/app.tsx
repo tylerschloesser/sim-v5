@@ -154,10 +154,18 @@ function getIntersection(
   return null
 }
 
-function usePlayer(velocity: Vec2, world: World): Vec2 {
+function usePlayer(
+  velocity: Vec2,
+  world: World,
+  debug: boolean,
+): Vec2 {
   const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
   const lastStep = useRef<number | null>(null)
   useEffect(() => {
+    if (debug) {
+      lastStep.current = null
+      return
+    }
     if (velocity.len() === 0) {
       lastStep.current = null
       return
@@ -180,7 +188,7 @@ function usePlayer(velocity: Vec2, world: World): Vec2 {
     return () => {
       self.cancelAnimationFrame(handle)
     }
-  }, [velocity])
+  }, [velocity, debug])
   return player
 }
 
@@ -216,14 +224,14 @@ export function App() {
     ? Math.min(viewport.x, viewport.y) / 10
     : null
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const debug = useDebug()
   const svg = useRef<SVGSVGElement>(null)
   const world = useMemo(initWorld, [])
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
-  const player = usePlayer(velocity, world)
+  const player = usePlayer(velocity, world, debug)
   const camera = player
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const debug = useDebug()
   const path = usePath(player, velocity)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
