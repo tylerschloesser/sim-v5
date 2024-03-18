@@ -20,7 +20,7 @@ interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
-type Path = Array<{ u: Vec2; v: Vec2; cell: Vec2 }>
+type Path = Array<{ a: Vec2; b: Vec2; v: Vec2; cell: Vec2 }>
 
 function useVelocity(
   scale: number | null,
@@ -123,7 +123,7 @@ function usePath(
       invariant(dist >= 0)
       const v = vCurrent.mul(dist)
 
-      path.push({ u, v, cell })
+      const a = u
 
       u = u.add(v)
 
@@ -137,6 +137,10 @@ function usePath(
         u.y = Math.round(u.y)
         y = Math.round(y)
       }
+
+      const b = u
+
+      path.push({ a, b, v: vCurrent, cell })
     }
 
     return path
@@ -515,14 +519,14 @@ function RenderWorld({
         />
         {SHOW_PATH && path.length && (
           <g fill="transparent">
-            {path.map(({ u, v }, i) => (
+            {path.map(({ a, b }, i) => (
               <line
                 stroke={i % 2 === 0 ? 'red' : 'cyan'}
                 key={i}
-                x1={u.x * scale}
-                y1={u.y * scale}
-                x2={(u.x + v.x) * scale}
-                y2={(u.y + v.y) * scale}
+                x1={a.x * scale}
+                y1={a.y * scale}
+                x2={b.x * scale}
+                y2={b.y * scale}
               />
             ))}
             {path.map(({ cell }, i) => (
@@ -543,7 +547,7 @@ function RenderWorld({
               scale={scale}
               translate={path
                 .at(-1)!
-                .u.add(path.at(-1)!.v)
+                .a.add(path.at(-1)!.v)
                 .floor()
                 .mul(scale)}
               x={0}
