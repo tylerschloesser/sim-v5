@@ -226,6 +226,14 @@ function useDebug() {
   return debug
 }
 
+function usePlayer(): [
+  Vec2,
+  React.Dispatch<React.SetStateAction<Vec2>>,
+] {
+  const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
+  return [player, setPlayer]
+}
+
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
@@ -240,8 +248,7 @@ export function App() {
   const world = useMemo(initWorld, [])
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
-
-  const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
+  const [player, setPlayer] = usePlayer()
   const path = usePath(player, velocity, world)
 
   useMovePlayer(setPlayer, velocity, debug)
