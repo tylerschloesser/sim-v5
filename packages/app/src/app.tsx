@@ -56,9 +56,9 @@ function usePath(
       return []
     }
 
-    const vnorm = velocity.norm()
-    const stepX = Math.sign(vnorm.x)
-    const stepY = Math.sign(vnorm.y)
+    const vNorm = velocity.norm()
+    const stepX = Math.sign(vNorm.x)
+    const stepY = Math.sign(vNorm.y)
     let { x, y } = player
     const path: Path = []
     let u = player
@@ -80,14 +80,14 @@ function usePath(
       }
 
       const tMaxX =
-        vnorm.x === 0
+        vNorm.x === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepX - mod(x, stepX)) / vnorm.x)
+          : Math.abs((stepX - mod(x, stepX)) / vNorm.x)
 
       const tMaxY =
-        vnorm.y === 0
+        vNorm.y === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepY - mod(y, stepY)) / vnorm.y)
+          : Math.abs((stepY - mod(y, stepY)) / vNorm.y)
 
       let dist
       if (tMaxX < tMaxY) {
@@ -106,7 +106,7 @@ function usePath(
       }
 
       invariant(dist >= 0)
-      const v = vnorm.mul(dist)
+      const v = vNorm.mul(dist)
 
       path.push({ u, v, cell })
 
