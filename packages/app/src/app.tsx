@@ -97,6 +97,8 @@ function usePath(
         v.x < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
         v.y < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
       )
+      invariant(cell.x % 1 === 0)
+      invariant(cell.y % 1 === 0)
 
       const cellId = `${cell.x}.${cell.y}`
       const cellType = world.cells[cellId]?.type
