@@ -75,9 +75,23 @@ function usePath(
       const cellId = `${cell.x}.${cell.y}`
       const cellType = world.cells[cellId]?.type
 
-      const vCurrent = vNorm
+      let vCurrent: Vec2 | null = vNorm
 
       if (cellType !== CellType.enum.Grass) {
+        const order: ('x' | 'y')[] =
+          Math.abs(vNorm.x) > Math.abs(vNorm.y)
+            ? ['x', 'y']
+            : ['y', 'x']
+
+        for (const axis of order) {
+          if (axis === 'x') {
+          }
+        }
+
+        vCurrent = null
+      }
+
+      if (vCurrent === null) {
         break
       }
 
