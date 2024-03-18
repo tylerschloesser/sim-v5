@@ -71,7 +71,7 @@ function usePath(
     let traveled = 0
 
     while (traveled !== total) {
-      const cell = new Vec2(
+      let cell = new Vec2(
         stepX < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
         stepY < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
       )
@@ -84,14 +84,74 @@ function usePath(
 
       if (cellType !== CellType.enum.Grass) {
         if (x % 1 === 0 && y % 1 === 0) {
-          // TODO
-          console.log('TODO')
-          vCurrent = null
+          const order: ['x', 'y'] | ['y', 'x'] =
+            Math.abs(vNorm.x) > Math.abs(vNorm.y)
+              ? ['x', 'y']
+              : ['y', 'x']
+
+          let found = false
+
+          for (const axis of order) {
+            if (axis === 'x') {
+              const adjacent = new Vec2(
+                cell.x,
+                cell.y - stepY,
+              )
+              const adjacentId = `${adjacent.x}.${adjacent.y}`
+              const adjacentType =
+                world.cells[adjacentId]?.type
+              if (adjacentType === CellType.enum.Grass) {
+                cell = adjacent
+                vCurrent = new Vec2(vCurrent.x, 0)
+                found = true
+                break
+              }
+            } else {
+              invariant(axis === 'y')
+              const adjacent = new Vec2(
+                cell.x - stepX,
+                cell.y,
+              )
+              const adjacentId = `${adjacent.x}.${adjacent.y}`
+              const adjacentType =
+                world.cells[adjacentId]?.type
+              if (adjacentType === CellType.enum.Grass) {
+                cell = adjacent
+                vCurrent = new Vec2(0, vCurrent.y)
+                found = true
+                break
+              }
+            }
+          }
+          if (!found) {
+            vCurrent = null
+          }
         } else if (x % 1 === 0) {
+          //
           // we are on the y axis, attempt to move in the y direction
-          vCurrent = new Vec2(0, vCurrent.y)
+          //
+          const adjacent = new Vec2(cell.x - stepX, cell.y)
+          const adjacentId = `${adjacent.x}.${adjacent.y}`
+          const adjacentType = world.cells[adjacentId]?.type
+          if (adjacentType !== CellType.enum.Grass) {
+            vCurrent = null
+          } else {
+            cell = adjacent
+            vCurrent = new Vec2(0, vCurrent.y)
+          }
         } else if (y % 1 === 0) {
-          vCurrent = new Vec2(vCurrent.x, 0)
+          //
+          // we are on the x axis, attempt to move in the x direction
+          //
+          const adjacent = new Vec2(cell.x, cell.y - stepY)
+          const adjacentId = `${adjacent.x}.${adjacent.y}`
+          const adjacentType = world.cells[adjacentId]?.type
+          if (adjacentType !== CellType.enum.Grass) {
+            vCurrent = null
+          } else {
+            cell = adjacent
+            vCurrent = new Vec2(vCurrent.x, 0)
+          }
         } else {
           invariant(false)
         }
