@@ -85,6 +85,7 @@ function usePath(
       if (cellType !== CellType.enum.Grass) {
         if (x % 1 === 0 && y % 1 === 0) {
           // TODO
+          console.log('TODO')
           vCurrent = null
         } else if (x % 1 === 0) {
           // we are on the y axis, attempt to move in the y direction
@@ -136,17 +137,30 @@ function usePath(
       x += v.x
       y += v.y
 
-      if (Math.abs(tMaxX) < Math.abs(tMaxY)) {
+      // prettier-ignore
+      if (Math.abs(u.x - Math.round(u.x)) <= Number.EPSILON) {
         u.x = Math.round(u.x)
+      }
+      if (Math.abs(x - Math.round(x)) <= Number.EPSILON) {
         x = Math.round(x)
-      } else {
+      }
+      // prettier-ignore
+      if (Math.abs(u.y - Math.round(u.y)) <= Number.EPSILON) {
         u.y = Math.round(u.y)
+      }
+      if (Math.abs(y - Math.round(y)) <= Number.EPSILON) {
         y = Math.round(y)
       }
 
-      const b = a.add(v)
+      const b = u
 
-      path.push({ a, b, v: vCurrent, dist, cell })
+      path.push({
+        a,
+        b,
+        v: vCurrent.mul(velocity.len()),
+        dist,
+        cell,
+      })
     }
 
     return path
@@ -160,8 +174,20 @@ function move(
   elapsed: number,
 ): Vec2 {
   if (ALLOW_MOVE) {
-    const dir = velocity.mul(elapsed)
-    return position.add(dir)
+    for (let i = 0; i < path.length && elapsed > 0; i++) {
+      const part = path.at(i)
+      invariant(part)
+
+      if (part.v.len() * elapsed < part.dist) {
+        position = part.a.add(part.v.mul(elapsed))
+        elapsed = 0
+      } else {
+        position = part.b
+        elapsed -= part.v.len() * elapsed
+      }
+    }
+
+    return position
   } else {
     return position
   }
@@ -201,7 +227,7 @@ function useMovePlayer(
     return () => {
       self.cancelAnimationFrame(handle)
     }
-  }, [velocity, debug])
+  }, [velocity, path, debug])
 }
 
 const INITIAL_DEBUG = (() => {
