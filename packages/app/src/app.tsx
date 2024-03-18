@@ -45,7 +45,11 @@ function useVelocity(
   }, [drag, scale])
 }
 
-function usePath(player: Vec2, velocity: Vec2): Path {
+function usePath(
+  player: Vec2,
+  velocity: Vec2,
+  world: World,
+): Path {
   return useMemo(() => {
     if (velocity.len() === 0) {
       return []
@@ -93,6 +97,13 @@ function usePath(player: Vec2, velocity: Vec2): Path {
         v.x < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
         v.y < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
       )
+
+      const cellId = `${cell.x}.${cell.y}`
+      const cellType = world.cells[cellId]?.type
+
+      if (cellType !== CellType.enum.Grass) {
+        break
+      }
 
       path.push({ u, v, cell })
 
@@ -232,7 +243,7 @@ export function App() {
   const velocity = useVelocity(scale, drag)
   const player = usePlayer(velocity, world, debug)
   const camera = player
-  const path = usePath(player, velocity)
+  const path = usePath(player, velocity, world)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
