@@ -79,7 +79,7 @@ function usePath(
       if (cellType !== CellType.enum.Grass) {
         if (x % 1 === 0 && y % 1 === 0) {
           // TODO
-          console.log('TODO')
+          vCurrent = null
         } else if (x % 1 === 0) {
           // we are on the y axis, attempt to move in the y direction
           vCurrent = new Vec2(0, vCurrent.y)
@@ -88,8 +88,6 @@ function usePath(
         } else {
           invariant(false)
         }
-
-        vCurrent = null
       }
 
       if (vCurrent === null) {
