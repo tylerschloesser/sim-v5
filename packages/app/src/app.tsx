@@ -78,17 +78,16 @@ function usePath(
       let vCurrent: Vec2 | null = vNorm
 
       if (cellType !== CellType.enum.Grass) {
-        invariant(x % 1 === 0 || y % 1 === 0)
-
-        const order: ('x' | 'y')[] =
-          Math.abs(vNorm.x) > Math.abs(vNorm.y)
-            ? ['x', 'y']
-            : ['y', 'x']
-
-        for (const axis of order) {
-          if (axis === 'x') {
-          } else {
-          }
+        if (x % 1 === 0 && y % 1 === 0) {
+          // TODO
+          console.log('TODO')
+        } else if (x % 1 === 0) {
+          // we are on the y axis, attempt to move in the y direction
+          vCurrent = new Vec2(0, vCurrent.y)
+        } else if (y % 1 === 0) {
+          vCurrent = new Vec2(vCurrent.x, 0)
+        } else {
+          invariant(false)
         }
 
         vCurrent = null
