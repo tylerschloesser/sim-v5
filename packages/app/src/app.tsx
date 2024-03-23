@@ -13,6 +13,8 @@ const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = false
 const SHOW_TARGET_CELL: boolean = true
 
+const MAX_SPEED = 10
+
 // How far ahead (in seconds) to simulate the path.
 // The time step cannot be greater than this.
 const PATH_TIME = 1
@@ -51,7 +53,10 @@ function useVelocity(
     // invert y direction
     dir.y *= -1
 
-    const speed = dir.div(scale).len()
+    const speed = Math.min(
+      (dir.div(scale).len() + 1) ** 1.5 - 1,
+      MAX_SPEED,
+    )
 
     return dir.norm().mul(speed)
   }, [drag, scale])
