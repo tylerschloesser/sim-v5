@@ -65,6 +65,7 @@ function useVelocity(
   }, [drag, scale])
 
   useEffect(() => {
+    // TODO store dampen velocity in state
     let handle: number
     function step() {
       handle = self.requestAnimationFrame(step)
