@@ -10,9 +10,11 @@ import { initWorld } from './world.js'
 
 const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
-const SHOW_PATH: boolean = false
-const SHOW_TARGET_CELL: boolean = true
+const SHOW_PATH: boolean = true
+const SHOW_TARGET_CELL: boolean = false
 
+// How far ahead (in seconds) to simulate the path.
+// The time step cannot be greater than this.
 const PATH_TIME = 1
 
 type PointerId = number
