@@ -730,14 +730,36 @@ function SmoothRect({
 }
 
 interface RenderVelocityProps {
-  velocity: Vec2 | null
+  velocity: Vec2
   scale: number
 }
 function RenderVelocity({
   velocity,
   scale,
 }: RenderVelocityProps) {
-  return null
+  if (velocity.len() === 0) {
+    return null
+  }
+
+  const { x: vx, y: vy } = velocity
+  // multiply by -1 because atan2 measures counter-clockwise
+  const angle = radiansToDegrees(Math.atan2(vy, vx)) * -1
+
+  return (
+    <g
+      stroke="red"
+      fill="transparent"
+      transform={`translate(${scale} ${scale})`}
+    >
+      <circle cx={0} cy={0} r={scale / 2} />
+      <circle
+        cx={0}
+        cy={0}
+        transform={`rotate(${angle}) translate(${scale / 2 + (scale / 10) * 2} 0)`}
+        r={scale / 10}
+      />
+    </g>
+  )
 }
 
 interface RenderDragProps {
@@ -755,12 +777,6 @@ function RenderDrag({ drag, scale }: RenderDragProps) {
   if (dir) {
     dir.y *= -1
   }
-
-  // multiply by -1 because atan2 measures counter-clockwise
-  const angle = dir
-    ? radiansToDegrees(Math.atan2(dir.y, dir.x)) * -1
-    : null
-  const dist = dir?.len() ?? null
 
   if (!start) return null
   return (
@@ -791,21 +807,6 @@ function RenderDrag({ drag, scale }: RenderDragProps) {
           <circle cx={end.x} cy={end.y} r={scale * 1.5} />
         )}
       </g>
-      {dist && dist > 1 && (
-        <g
-          stroke="red"
-          fill="transparent"
-          transform={`translate(${scale} ${scale})`}
-        >
-          <circle cx={0} cy={0} r={scale / 2} />
-          <circle
-            cx={0}
-            cy={0}
-            transform={`rotate(${angle}) translate(${scale / 2 + (scale / 10) * 2} 0)`}
-            r={scale / 10}
-          />
-        </g>
-      )}
     </>
   )
 }
