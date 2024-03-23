@@ -163,8 +163,7 @@ function usePath(
       }
 
       if (vCurrent.len() === 0) {
-        // eslint-disable-next-line
-        debugger
+        break
       }
 
       const tMaxX =
