@@ -755,7 +755,7 @@ function RenderVelocity({
         y="16"
         textAnchor="end"
       >
-        {`${vx.toFixed(2)},${vy.toFixed(2)}`}
+        {`speed: ${velocity.len().toFixed(2)}`}
       </text>
       <g
         stroke="red"
