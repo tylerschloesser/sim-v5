@@ -13,6 +13,8 @@ const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = true
 const SHOW_TARGET_CELL: boolean = false
 
+const PATH_TIME = 1
+
 type PointerId = number
 
 interface Drag {
@@ -23,8 +25,7 @@ interface Drag {
 type Path = Array<{
   a: Vec2
   b: Vec2
-  v: Vec2
-  dist: number
+  t: number
   cell: Vec2
 }>
 
@@ -61,16 +62,16 @@ function usePath(
       return []
     }
 
-    const vNorm = velocity.norm()
-    const stepX = Math.sign(vNorm.x)
-    const stepY = Math.sign(vNorm.y)
+    // const vNorm = velocity.norm()
+    const stepX = Math.sign(velocity.x)
+    const stepY = Math.sign(velocity.y)
     let { x, y } = player
     const path: Path = []
     let u = player
-    const total = velocity.len()
-    let traveled = 0
 
-    while (traveled !== total) {
+    // const speed = velocity.len()
+    let time = 0
+    while (time !== PATH_TIME) {
       let cell = new Vec2(
         stepX < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
         stepY < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
@@ -80,12 +81,12 @@ function usePath(
       const cellId = `${cell.x}.${cell.y}`
       const cellType = world.cells[cellId]?.type
 
-      let vCurrent: Vec2 | null = vNorm
+      let vCurrent: Vec2 | null = velocity
 
       if (cellType !== CellType.enum.Grass) {
         if (x % 1 === 0 && y % 1 === 0) {
           const order: ['x', 'y'] | ['y', 'x'] =
-            Math.abs(vNorm.x) > Math.abs(vNorm.y)
+            Math.abs(vCurrent.x) > Math.abs(vCurrent.y)
               ? ['x', 'y']
               : ['y', 'x']
 
@@ -161,6 +162,8 @@ function usePath(
         break
       }
 
+      invariant(vCurrent.len() > 0)
+
       const tMaxX =
         vCurrent.x === 0
           ? Number.POSITIVE_INFINITY
@@ -171,31 +174,31 @@ function usePath(
           ? Number.POSITIVE_INFINITY
           : Math.abs((stepY - mod(y, stepY)) / vCurrent.y)
 
-      let dist
+      let t
       if (tMaxX < tMaxY) {
-        dist = tMaxX
+        t = tMaxX
       } else {
-        dist = tMaxY
+        t = tMaxY
       }
 
-      invariant(dist > 0)
+      invariant(t > 0)
 
-      if (traveled + dist > total) {
-        dist = total - traveled
-        traveled = total
+      if (time + t > PATH_TIME) {
+        t = PATH_TIME - time
+        time = PATH_TIME
       } else {
-        traveled += dist
+        time += t
       }
 
-      invariant(dist >= 0)
-      const v = vCurrent.mul(dist)
+      invariant(t >= 0)
+      const du = vCurrent.mul(t)
 
       const a = u
 
-      u = u.add(v)
+      u = u.add(du)
 
-      x += v.x
-      y += v.y
+      x += du.x
+      y += du.y
 
       // prettier-ignore
       if (Math.abs(u.x - Math.round(u.x)) <= Number.EPSILON) {
@@ -217,14 +220,13 @@ function usePath(
       path.push({
         a,
         b,
-        v: vCurrent.mul(velocity.len()),
-        dist,
+        t,
         cell,
       })
     }
 
     return path
-  }, [player, velocity])
+  }, [player, velocity, world])
 }
 
 function move(
@@ -238,12 +240,13 @@ function move(
       const part = path.at(i)
       invariant(part)
 
-      if (part.v.len() * elapsed < part.dist) {
-        position = part.a.add(part.v.mul(elapsed))
+      if (elapsed < part.t) {
+        const v = part.b.sub(part.a).div(part.t)
+        position = part.a.add(v.mul(elapsed))
         elapsed = 0
       } else {
         position = part.b
-        elapsed -= part.v.len() * elapsed
+        elapsed -= part.t
       }
     }
 
@@ -637,11 +640,7 @@ function RenderWorld({
           <g stroke="red" fill="transparent">
             <SmoothRect
               scale={scale}
-              translate={path
-                .at(-1)!
-                .a.add(path.at(-1)!.v)
-                .floor()
-                .mul(scale)}
+              translate={path.at(-1)!.b.floor().mul(scale)}
               x={0}
               y={0}
               width={scale}
