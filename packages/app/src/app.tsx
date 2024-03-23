@@ -746,19 +746,31 @@ function RenderVelocity({
   const angle = radiansToDegrees(Math.atan2(vy, vx)) * -1
 
   return (
-    <g
-      stroke="red"
-      fill="transparent"
-      transform={`translate(${scale} ${scale})`}
-    >
-      <circle cx={0} cy={0} r={scale / 2} />
-      <circle
-        cx={0}
-        cy={0}
-        transform={`rotate(${angle}) translate(${scale / 2 + (scale / 10) * 2} 0)`}
-        r={scale / 10}
-      />
-    </g>
+    <>
+      <text
+        fontSize={16}
+        fontFamily="system-ui"
+        fill="white"
+        x="100%"
+        y="16"
+        textAnchor="end"
+      >
+        {`${vx.toFixed(2)},${vy.toFixed(2)}`}
+      </text>
+      <g
+        stroke="red"
+        fill="transparent"
+        transform={`translate(${scale} ${scale})`}
+      >
+        <circle cx={0} cy={0} r={scale / 2} />
+        <circle
+          cx={0}
+          cy={0}
+          transform={`rotate(${angle}) translate(${scale / 2 + (scale / 10) * 2} 0)`}
+          r={scale / 10}
+        />
+      </g>
+    </>
   )
 }
 
@@ -772,27 +784,9 @@ function RenderDrag({ drag, scale }: RenderDragProps) {
   if (end && start && end.equals(start)) {
     end = undefined
   }
-
-  const dir = start && end ? end.sub(start) : null
-  if (dir) {
-    dir.y *= -1
-  }
-
   if (!start) return null
   return (
     <>
-      {dir && (
-        <text
-          fontSize={16}
-          fontFamily="system-ui"
-          fill="white"
-          x="100%"
-          y="16"
-          textAnchor="end"
-        >
-          {`${dir.x.toFixed(2)},${dir.y.toFixed(2)}`}
-        </text>
-      )}
       <g stroke="blue" fill="transparent">
         {end && (
           <line
