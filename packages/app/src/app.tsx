@@ -632,10 +632,10 @@ function RenderWorld({
               <rect
                 stroke={i % 2 === 0 ? 'red' : 'cyan'}
                 key={i}
-                x={cell.x * scale}
-                y={cell.y * scale}
-                width={scale}
-                height={scale}
+                x={cell.x * scale + 1}
+                y={cell.y * scale + 1}
+                width={scale - 2}
+                height={scale - 2}
               />
             ))}
           </g>
