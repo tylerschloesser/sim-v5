@@ -51,7 +51,9 @@ function useVelocity(
     // invert y direction
     dir.y *= -1
 
-    return dir.div(scale)
+    const speed = dir.div(scale).len()
+
+    return dir.norm().mul(speed)
   }, [drag, scale])
 }
 
@@ -393,6 +395,10 @@ export function App() {
             path={path}
           />
           <RenderDrag drag={drag} scale={scale} />
+          <RenderVelocity
+            velocity={velocity}
+            scale={scale}
+          />
         </>
       )}
     </svg>
@@ -721,6 +727,17 @@ function SmoothRect({
       height={height}
     />
   )
+}
+
+interface RenderVelocityProps {
+  velocity: Vec2 | null
+  scale: number
+}
+function RenderVelocity({
+  velocity,
+  scale,
+}: RenderVelocityProps) {
+  return null
 }
 
 interface RenderDragProps {
