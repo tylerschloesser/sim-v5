@@ -10,8 +10,8 @@ import { initWorld } from './world.js'
 
 const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
-const SHOW_PATH: boolean = true
-const SHOW_TARGET_CELL: boolean = false
+const SHOW_PATH: boolean = false
+const SHOW_TARGET_CELL: boolean = true
 
 const PATH_TIME = 1
 
@@ -640,7 +640,7 @@ function RenderWorld({
           <g stroke="red" fill="transparent">
             <SmoothRect
               scale={scale}
-              translate={path.at(-1)!.b.floor().mul(scale)}
+              translate={path.at(-1)!.cell.mul(scale)}
               x={0}
               y={0}
               width={scale}
