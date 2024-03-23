@@ -10,8 +10,8 @@ import { initWorld } from './world.js'
 
 const ALLOW_MOVE: boolean = true
 const SHOW_GRID: boolean = true
-const SHOW_PATH: boolean = true
-const SHOW_TARGET_CELL: boolean = false
+const SHOW_PATH: boolean = false
+const SHOW_TARGET_CELL: boolean = true
 
 // How far ahead (in seconds) to simulate the path.
 // The time step cannot be greater than this.
@@ -27,6 +27,7 @@ interface Drag {
 type Path = Array<{
   a: Vec2
   b: Vec2
+  v: Vec2
   t: number
   cell: Vec2
 }>
@@ -64,14 +65,12 @@ function usePath(
       return []
     }
 
-    // const vNorm = velocity.norm()
     const stepX = Math.sign(velocity.x)
     const stepY = Math.sign(velocity.y)
     let { x, y } = player
     const path: Path = []
     let u = player
 
-    // const speed = velocity.len()
     let time = 0
     while (time !== PATH_TIME) {
       let cell = new Vec2(
@@ -83,12 +82,12 @@ function usePath(
       const cellId = `${cell.x}.${cell.y}`
       const cellType = world.cells[cellId]?.type
 
-      let vCurrent: Vec2 | null = velocity
+      let v: Vec2 | null = velocity
 
       if (cellType !== CellType.enum.Grass) {
         if (x % 1 === 0 && y % 1 === 0) {
           const order: ['x', 'y'] | ['y', 'x'] =
-            Math.abs(vCurrent.x) > Math.abs(vCurrent.y)
+            Math.abs(v.x) > Math.abs(v.y)
               ? ['x', 'y']
               : ['y', 'x']
 
@@ -105,7 +104,7 @@ function usePath(
                 world.cells[adjacentId]?.type
               if (adjacentType === CellType.enum.Grass) {
                 cell = adjacent
-                vCurrent = new Vec2(vCurrent.x, 0)
+                v = new Vec2(v.x, 0)
                 found = true
                 break
               }
@@ -120,14 +119,14 @@ function usePath(
                 world.cells[adjacentId]?.type
               if (adjacentType === CellType.enum.Grass) {
                 cell = adjacent
-                vCurrent = new Vec2(0, vCurrent.y)
+                v = new Vec2(0, v.y)
                 found = true
                 break
               }
             }
           }
           if (!found) {
-            vCurrent = null
+            v = null
           }
         } else if (x % 1 === 0) {
           //
@@ -137,10 +136,10 @@ function usePath(
           const adjacentId = `${adjacent.x}.${adjacent.y}`
           const adjacentType = world.cells[adjacentId]?.type
           if (adjacentType !== CellType.enum.Grass) {
-            vCurrent = null
+            v = null
           } else {
             cell = adjacent
-            vCurrent = new Vec2(0, vCurrent.y)
+            v = new Vec2(0, v.y)
           }
         } else if (y % 1 === 0) {
           //
@@ -150,40 +149,31 @@ function usePath(
           const adjacentId = `${adjacent.x}.${adjacent.y}`
           const adjacentType = world.cells[adjacentId]?.type
           if (adjacentType !== CellType.enum.Grass) {
-            vCurrent = null
+            v = null
           } else {
             cell = adjacent
-            vCurrent = new Vec2(vCurrent.x, 0)
+            v = new Vec2(v.x, 0)
           }
         } else {
           invariant(false)
         }
       }
 
-      if (vCurrent === null) {
-        break
-      }
-
-      if (vCurrent.len() === 0) {
+      if (v === null || v.len() === 0) {
         break
       }
 
       const tMaxX =
-        vCurrent.x === 0
+        v.x === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepX - mod(x, stepX)) / vCurrent.x)
+          : Math.abs((stepX - mod(x, stepX)) / v.x)
 
       const tMaxY =
-        vCurrent.y === 0
+        v.y === 0
           ? Number.POSITIVE_INFINITY
-          : Math.abs((stepY - mod(y, stepY)) / vCurrent.y)
+          : Math.abs((stepY - mod(y, stepY)) / v.y)
 
-      let t
-      if (tMaxX < tMaxY) {
-        t = tMaxX
-      } else {
-        t = tMaxY
-      }
+      let t = tMaxX < tMaxY ? tMaxX : tMaxY
 
       invariant(t > 0)
 
@@ -195,7 +185,7 @@ function usePath(
       }
 
       invariant(t >= 0)
-      const du = vCurrent.mul(t)
+      const du = v.mul(t)
 
       const a = u
 
@@ -225,6 +215,7 @@ function usePath(
         a,
         b,
         t,
+        v,
         cell,
       })
     }
@@ -245,8 +236,7 @@ function move(
       invariant(part)
 
       if (elapsed < part.t) {
-        const v = part.b.sub(part.a).div(part.t)
-        position = part.a.add(v.mul(elapsed))
+        position = part.a.add(part.v.mul(elapsed))
         elapsed = 0
       } else {
         position = part.b
