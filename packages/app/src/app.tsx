@@ -226,7 +226,6 @@ function usePath(
 
 function move(
   position: Vec2,
-  velocity: Vec2,
   path: Path,
   elapsed: number,
 ): Vec2 {
@@ -252,7 +251,6 @@ function move(
 
 function useMovePlayer(
   setPlayer: React.Dispatch<React.SetStateAction<Vec2>>,
-  velocity: Vec2,
   path: Path,
   debug: boolean,
 ): void {
@@ -262,7 +260,7 @@ function useMovePlayer(
       lastStep.current = null
       return
     }
-    if (velocity.len() === 0) {
+    if (path.length === 0) {
       lastStep.current = null
       return
     }
@@ -275,16 +273,14 @@ function useMovePlayer(
       invariant(lastStep.current !== null)
       const elapsed = (now - lastStep.current) / 1000
       lastStep.current = now
-      setPlayer((prev) =>
-        move(prev, velocity, path, elapsed),
-      )
+      setPlayer((prev) => move(prev, path, elapsed))
       handle = self.requestAnimationFrame(step)
     }
     handle = self.requestAnimationFrame(step)
     return () => {
       self.cancelAnimationFrame(handle)
     }
-  }, [velocity, path, debug])
+  }, [path, debug])
 }
 
 const INITIAL_DEBUG = (() => {
@@ -362,7 +358,7 @@ export function App() {
   const [player, setPlayer] = usePlayer()
   const path = usePath(player, velocity, world)
 
-  useMovePlayer(setPlayer, velocity, path, debug)
+  useMovePlayer(setPlayer, path, debug)
 
   const camera = player
   useResize(svg, setViewport)
