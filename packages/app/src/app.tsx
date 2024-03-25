@@ -13,7 +13,7 @@ const SHOW_GRID: boolean = true
 const SHOW_PATH: boolean = false
 const SHOW_TARGET_CELL: boolean = true
 
-const MAX_SPEED = 10
+const MAX_SPEED = 20
 
 // How far ahead (in seconds) to simulate the path.
 // The time step cannot be greater than this.
@@ -57,26 +57,64 @@ function useVelocity(
     dir.y *= -1
 
     const speed = Math.min(
-      (dir.div(scale).len() + 1) ** 1.5 - 1,
+      (dir.div(scale).len() + 1) ** 1.75 - 1,
       MAX_SPEED,
     )
 
     return dir.norm().mul(speed)
   }, [drag, scale])
 
+  const [fromRelease, setFromRelease] =
+    useState<Vec2 | null>(null)
+
+  const prevFromDrag = useRef<Vec2 | null>(fromDrag)
+
   useEffect(() => {
-    // TODO store dampen velocity in state
-    let handle: number
-    function step() {
-      handle = self.requestAnimationFrame(step)
-    }
-    handle = self.requestAnimationFrame(step)
-    return () => {
-      self.cancelAnimationFrame(handle)
+    if (fromDrag) {
+      setFromRelease(null)
     }
   }, [fromDrag])
 
-  return fromDrag ?? new Vec2(0, 0)
+  useEffect(() => {
+    if (fromDrag || !prevFromDrag.current) {
+      return
+    }
+
+    invariant(prevFromDrag.current)
+    setFromRelease(prevFromDrag.current)
+
+    let handle: number | null
+    let lastStep = self.performance.now()
+    function step() {
+      const now = self.performance.now()
+      const dt = (now - lastStep) / 1000
+      lastStep = now
+
+      setFromRelease((prev) => {
+        invariant(prev)
+        const speed = prev.len() - dt * 100
+        if (speed < 1e-4) {
+          handle = null
+          return null
+        } else {
+          handle = self.requestAnimationFrame(step)
+          return prev.norm().mul(speed)
+        }
+      })
+    }
+    handle = self.requestAnimationFrame(step)
+    return () => {
+      if (handle) {
+        self.cancelAnimationFrame(handle)
+      }
+    }
+  }, [fromDrag])
+
+  useEffect(() => {
+    prevFromDrag.current = fromDrag
+  }, [fromDrag])
+
+  return fromDrag ?? fromRelease ?? new Vec2(0, 0)
 }
 
 function usePath(
