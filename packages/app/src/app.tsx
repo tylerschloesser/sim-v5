@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import * as z from 'zod'
@@ -253,11 +259,10 @@ function RenderAction({
 
   const fill = `hsla(0, 100%, 50%, ${disabled ? 0.5 : 1})`
 
-  const onPointerUp = disabled
-    ? undefined
-    : () => {
-        console.log('todo')
-      }
+  const onPointerUp = useCallback(() => {
+    if (disabled) return
+    console.log('todo')
+  }, [disabled])
 
   return (
     <circle
