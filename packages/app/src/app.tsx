@@ -205,7 +205,7 @@ function RenderAction({
   viewport,
   scale,
 }: RenderActionProps) {
-  const r = scale
+  const r = scale * 1.5
   return (
     <circle
       cx={viewport.x / 2}
