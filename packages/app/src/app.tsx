@@ -27,7 +27,7 @@ import {
 import { usePath } from './use-path.js'
 import { useVelocity } from './use-velocity.js'
 import { Vec2 } from './vec2.js'
-import { initWorld } from './world.js'
+import { getCellColor, initWorld } from './world.js'
 
 function move(
   player: Player,
@@ -249,6 +249,7 @@ function clearStone(cellId: string) {
     const cell = draft.cells[cellId]
     invariant(cell?.type === CellType.enum.Stone)
     cell.type = CellType.enum.Grass
+    cell.color = getCellColor(cell.type)
   }
 }
 

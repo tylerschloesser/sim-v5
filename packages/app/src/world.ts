@@ -4,7 +4,7 @@ import { Vec2 } from './vec2.js'
 
 const rng = new Prando(0)
 
-function getCellColor(type: CellType): string {
+export function getCellColor(type: CellType): string {
   switch (type) {
     case CellType.enum.Stone: {
       const hue = 0
