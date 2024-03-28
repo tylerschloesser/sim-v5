@@ -1,3 +1,4 @@
+import { drop, setWith } from 'lodash-es'
 import {
   useCallback,
   useEffect,
@@ -243,11 +244,20 @@ interface RenderActionProps {
   setWorld: Updater<World>
 }
 
+function clearStone(cellId: string) {
+  return function update(draft: World): void {
+    const cell = draft.cells[cellId]
+    invariant(cell?.type === CellType.enum.Stone)
+    cell.type = CellType.enum.Grass
+  }
+}
+
 function RenderAction({
   viewport,
   scale,
   player,
   world,
+  setWorld,
 }: RenderActionProps) {
   const r = scale * 1.5
 
@@ -261,8 +271,8 @@ function RenderAction({
 
   const onPointerUp = useCallback(() => {
     if (disabled) return
-    console.log('todo')
-  }, [disabled])
+    setWorld(clearStone(cellId))
+  }, [disabled, cellId])
 
   return (
     <circle
