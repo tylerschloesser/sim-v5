@@ -298,21 +298,36 @@ function RenderAction({
   const cell = world.cells[cellId]
   invariant(cell)
 
+  const [active, setActive] = useState(false)
+
   const disabled = cell.type !== CellType.enum.Stone
 
-  const fill = `hsla(0, 100%, 50%, ${disabled ? 0.5 : 1})`
+  const fill = disabled
+    ? 'hsla(0, 100%, 50%, .5)'
+    : active
+      ? 'hsla(0, 50%, 50%, 1)'
+      : 'hsla(0, 100%, 50%, 1)'
 
   const onPointerUp = useCallback(() => {
-    if (disabled) return
+    if (disabled || !active) return
     setWorld(clearStone(player.point))
-  }, [disabled, cellId])
+  }, [disabled, active, cellId])
+
+  const onPointerDown: React.PointerEventHandler =
+    useCallback(
+      (ev) => {
+        if (disabled) return
+        ev.stopPropagation()
+        setActive(true)
+      },
+      [disabled],
+    )
 
   return (
     <circle
       onPointerUp={onPointerUp}
-      onPointerDown={(ev) => {
-        ev.stopPropagation()
-      }}
+      onPointerDown={onPointerDown}
+      onPointerLeave={() => [setActive(false)]}
       cx={viewport.x / 2}
       cy={viewport.y - r * 2}
       r={r}
