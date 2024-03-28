@@ -208,6 +208,12 @@ function RenderAction({
   const r = scale * 1.5
   return (
     <circle
+      onPointerUp={() => {
+        console.log('TODO')
+      }}
+      onPointerDown={(ev) => {
+        ev.stopPropagation()
+      }}
       cx={viewport.x / 2}
       cy={viewport.y - r * 2}
       r={r}
