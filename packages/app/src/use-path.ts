@@ -11,8 +11,10 @@ import {
 } from './types.js'
 import { Vec2 } from './vec2.js'
 
-function isCellBlocked(cell: Cell | null): boolean {
-  return cell === null || cell.type !== CellType.enum.Grass
+function isCellBlocked(cell: Cell | undefined): boolean {
+  return (
+    cell === undefined || cell.type !== CellType.enum.Grass
+  )
 }
 
 export function usePath(
@@ -44,7 +46,7 @@ export function usePath(
 
       let v: Vec2 | null = velocity
 
-      if (cell?.type !== CellType.enum.Grass) {
+      if (isCellBlocked(cell)) {
         if (x % 1 === 0 && y % 1 === 0) {
           const order: ['x', 'y'] | ['y', 'x'] =
             Math.abs(v.x) > Math.abs(v.y)
@@ -61,7 +63,7 @@ export function usePath(
               )
               const adjacentId = `${adjacentPoint.x}.${adjacentPoint.y}`
               const adjacent = world.cells[adjacentId]
-              if (adjacent?.type === CellType.enum.Grass) {
+              if (!isCellBlocked(adjacent)) {
                 point = adjacentPoint
                 v = new Vec2(v.x, 0)
                 found = true
@@ -75,7 +77,7 @@ export function usePath(
               )
               const adjacentId = `${adjacentPoint.x}.${adjacentPoint.y}`
               const adjacent = world.cells[adjacentId]
-              if (adjacent?.type === CellType.enum.Grass) {
+              if (!isCellBlocked(adjacent)) {
                 point = adjacentPoint
                 v = new Vec2(0, v.y)
                 found = true
@@ -96,7 +98,7 @@ export function usePath(
           )
           const adjacentId = `${adjacentPoint.x}.${adjacentPoint.y}`
           const adjacent = world.cells[adjacentId]
-          if (adjacent?.type !== CellType.enum.Grass) {
+          if (isCellBlocked(adjacent)) {
             v = null
           } else {
             point = adjacentPoint
@@ -112,7 +114,7 @@ export function usePath(
           )
           const adjacentId = `${adjacentPoint.x}.${adjacentPoint.y}`
           const adjacent = world.cells[adjacentId]
-          if (adjacent?.type !== CellType.enum.Grass) {
+          if (isCellBlocked(adjacent)) {
             v = null
           } else {
             point = adjacentPoint
