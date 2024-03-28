@@ -10,7 +10,13 @@ import {
   SHOW_TARGET_CELL,
 } from './const.js'
 import { radiansToDegrees } from './math.js'
-import { CellType, Drag, Path, World } from './types.js'
+import {
+  CellType,
+  Drag,
+  Path,
+  Player,
+  World,
+} from './types.js'
 import { usePath } from './use-path.js'
 import { useVelocity } from './use-velocity.js'
 import { Vec2 } from './vec2.js'
@@ -42,7 +48,7 @@ function move(
 }
 
 function useMovePlayer(
-  setPlayer: React.Dispatch<React.SetStateAction<Vec2>>,
+  setPlayer: React.Dispatch<React.SetStateAction<Player>>,
   path: Path,
   debug: boolean,
 ): void {
@@ -123,10 +129,11 @@ const INITIAL_PLAYER = (() => {
 })()
 
 function usePlayer(): [
-  Vec2,
-  React.Dispatch<React.SetStateAction<Vec2>>,
+  Player,
+  React.Dispatch<React.SetStateAction<Player>>,
 ] {
-  const [player, setPlayer] = useState<Vec2>(INITIAL_PLAYER)
+  const [player, setPlayer] =
+    useState<Player>(INITIAL_PLAYER)
   useEffect(() => {
     localStorage.setItem('player', JSON.stringify(player))
   }, [player])
@@ -204,7 +211,7 @@ export function App() {
 interface RenderActionProps {
   viewport: Vec2
   scale: number
-  player: Vec2
+  player: Player
   world: World
 }
 
@@ -401,7 +408,7 @@ interface RenderWorldProps {
   camera: Vec2
   scale: number
   world: World
-  player: Vec2
+  player: Player
   path: Path
 }
 function RenderWorld({

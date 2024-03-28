@@ -22,6 +22,8 @@ export interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
+export type Player = Vec2
+
 export type Path = Array<{
   a: Vec2
   b: Vec2
