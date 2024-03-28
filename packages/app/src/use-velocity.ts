@@ -54,23 +54,25 @@ export function useVelocity(
     setFromRelease(prevFromDrag.current)
 
     let handle: number | null
-    let lastStep = self.performance.now()
+
+    const startVelocity = prevFromDrag.current
+    const startRelease = self.performance.now()
+
+    const duration = 500
+
     function step() {
       const now = self.performance.now()
-      const dt = (now - lastStep) / 1000
-      lastStep = now
-
-      setFromRelease((prev) => {
-        invariant(prev)
-        const speed = prev.len() - dt * 50
-        if (speed < 1e-4) {
-          handle = null
-          return null
-        } else {
-          handle = self.requestAnimationFrame(step)
-          return prev.norm().mul(speed)
-        }
-      })
+      const dt = now - startRelease
+      invariant(dt >= 0)
+      if (dt >= duration) {
+        setFromRelease(null)
+        handle = null
+      } else {
+        const speed =
+          startVelocity.len() * (1 - (dt / duration) ** 2)
+        setFromRelease(startVelocity.norm().mul(speed))
+        handle = self.requestAnimationFrame(step)
+      }
     }
     handle = self.requestAnimationFrame(step)
     return () => {
