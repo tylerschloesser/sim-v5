@@ -2,19 +2,14 @@ import { useMemo } from 'react'
 import invariant from 'tiny-invariant'
 import { PATH_TIME } from './const.js'
 import { mod } from './math.js'
-import {
-  Cell,
-  CellType,
-  Path,
-  Player,
-  World,
-} from './types.js'
+import { Cell, Path, Player, World } from './types.js'
 import { Vec2 } from './vec2.js'
 
 function isCellBlocked(cell: Cell | undefined): boolean {
-  return (
-    cell === undefined || cell.type !== CellType.enum.Grass
-  )
+  if (cell === undefined) {
+    return true
+  }
+  return false
 }
 
 export function usePath(
