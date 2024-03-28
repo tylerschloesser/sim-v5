@@ -239,7 +239,7 @@ export function App() {
             player={player}
             path={path}
           />
-          <RenderDrag drag={drag} scale={scale} />
+          <RenderDrag drag={drag} viewport={viewport} />
           <RenderVelocity
             velocity={velocity}
             scale={scale}
@@ -707,14 +707,16 @@ function RenderVelocity({
 
 interface RenderDragProps {
   drag: Drag | null
-  scale: number
+  viewport: Vec2
 }
-function RenderDrag({ drag, scale }: RenderDragProps) {
+function RenderDrag({ drag, viewport }: RenderDragProps) {
   const start = drag?.events.at(0)?.position
   let end = drag?.events.at(-1)?.position
   if (end && start && end.equals(start)) {
     end = undefined
   }
+  const vmin = Math.min(viewport.x, viewport.y)
+  const r = vmin / 8
   if (!start) return null
   return (
     <>
@@ -727,10 +729,8 @@ function RenderDrag({ drag, scale }: RenderDragProps) {
             y2={end.y}
           />
         )}
-        <circle cx={start.x} cy={start.y} r={scale * 1.5} />
-        {end && (
-          <circle cx={end.x} cy={end.y} r={scale * 1.5} />
-        )}
+        <circle cx={start.x} cy={start.y} r={r} />
+        {end && <circle cx={end.x} cy={end.y} r={r} />}
       </g>
     </>
   )
