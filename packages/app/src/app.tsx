@@ -242,7 +242,7 @@ function RenderAction({
 }: RenderActionProps) {
   const r = scale * 1.5
 
-  const cellId = `${Math.floor(player.position.x)}.${Math.floor(player.position.y)}`
+  const { cellId } = player
   const cell = world.cells[cellId]
   invariant(cell)
 
