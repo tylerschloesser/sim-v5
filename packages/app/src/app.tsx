@@ -31,6 +31,8 @@ import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
 import { getCellColor, initWorld } from './world.js'
 
+type Action = 'clear-stone'
+
 function move(
   player: Player,
   path: Path,
@@ -199,6 +201,8 @@ export function App() {
   const [player, setPlayer] = usePlayer()
   const path = usePath(player, velocity, world)
 
+  const [action, setAction] = useState<Action | null>(null)
+
   useMovePlayer(setPlayer, path, debug)
 
   const camera = player.position
@@ -231,6 +235,14 @@ export function App() {
             scale={scale}
             world={world}
           />
+          <RenderAction
+            viewport={viewport}
+            camera={camera}
+            scale={scale}
+            world={world}
+            player={player}
+            action={action}
+          />
           <RenderPlayer
             viewport={viewport}
             camera={camera}
@@ -246,11 +258,11 @@ export function App() {
           />
           <RenderActionButton
             viewport={viewport}
-            camera={camera}
-            scale={scale}
             player={player}
             world={world}
             setWorld={setWorld}
+            action={action}
+            setAction={setAction}
           />
         </>
       )}
@@ -283,22 +295,68 @@ function clearStone(point: Point) {
   }
 }
 
-interface RenderActionButtonProps {
+interface RenderActionProps {
   viewport: Vec2
   camera: Vec2
   scale: number
   player: Player
   world: World
-  setWorld: Updater<World>
+  action: Action | null
 }
 
-function RenderActionButton({
+function RenderAction({
   viewport,
   camera,
   scale,
   player,
   world,
+  action,
+}: RenderActionProps) {
+  const cellId = toCellId(player.point)
+  const cell = world.cells[cellId]
+  invariant(cell)
+  return (
+    <g
+      transform={svgTransform({
+        translate: viewport
+          .div(2)
+          .sub(
+            new Vec2(camera.x, camera.y * -1).mul(scale),
+          ),
+        scale: new Vec2(1, -1),
+      })}
+    >
+      {action && (
+        <rect
+          x={player.point.x * scale}
+          y={player.point.y * scale}
+          width={scale}
+          height={scale}
+          fill={'pink'}
+        />
+      )}
+    </g>
+  )
+}
+
+interface RenderActionButtonProps {
+  viewport: Vec2
+  player: Player
+  world: World
+  setWorld: Updater<World>
+  action: Action | null
+  setAction: React.Dispatch<
+    React.SetStateAction<Action | null>
+  >
+}
+
+function RenderActionButton({
+  viewport,
+  player,
+  world,
   setWorld,
+  action,
+  setAction,
 }: RenderActionButtonProps) {
   const vmin = Math.min(viewport.x, viewport.y)
 
@@ -308,33 +366,37 @@ function RenderActionButton({
   const cell = world.cells[cellId]
   invariant(cell)
 
-  const [active, setActive] = useState(false)
-
   const disabled = cell.type !== CellType.enum.Stone
 
   const fill = disabled
     ? 'hsla(0, 100%, 50%, .5)'
-    : active
+    : action !== null
       ? 'hsla(0, 50%, 50%, 1)'
       : 'hsla(0, 100%, 50%, 1)'
 
   const stop = useCallback(() => {
     if (disabled) return
-    setActive(false)
+    setAction(null)
   }, [disabled])
 
   const start: React.PointerEventHandler = useCallback(
     (ev) => {
       if (disabled) return
       ev.stopPropagation()
-      setActive(true)
+      setAction('clear-stone')
     },
     [disabled],
   )
 
+  useEffect(() => {
+    if (disabled) {
+      setAction(null)
+    }
+  }, [disabled])
+
   const handler = useRef<number | null>(null)
   useEffect(() => {
-    if (active && !disabled) {
+    if (action) {
       // eslint-disable-next-line no-inner-declarations
       function step() {
         console.log('TODO do something')
@@ -349,40 +411,18 @@ function RenderActionButton({
         }
       }
     }
-  }, [active, disabled])
+  }, [action])
 
   return (
-    <>
-      <g
-        transform={svgTransform({
-          translate: viewport
-            .div(2)
-            .sub(
-              new Vec2(camera.x, camera.y * -1).mul(scale),
-            ),
-          scale: new Vec2(1, -1),
-        })}
-      >
-        {active && !disabled && (
-          <rect
-            x={player.point.x * scale}
-            y={player.point.y * scale}
-            width={scale}
-            height={scale}
-            fill={'pink'}
-          />
-        )}
-      </g>
-      <circle
-        onPointerDown={start}
-        onPointerUp={stop}
-        onPointerLeave={stop}
-        cx={viewport.x / 2}
-        cy={viewport.y - r * 2}
-        r={r}
-        fill={fill}
-      />
-    </>
+    <circle
+      onPointerDown={start}
+      onPointerUp={stop}
+      onPointerLeave={stop}
+      cx={viewport.x / 2}
+      cy={viewport.y - r * 2}
+      r={r}
+      fill={fill}
+    />
   )
 }
 
