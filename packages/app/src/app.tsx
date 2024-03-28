@@ -167,9 +167,19 @@ function usePlayer(): [
   return [player, setPlayer]
 }
 
+const INITIAL_WORLD = (() => {
+  const value = localStorage.getItem('world')
+  if (value) {
+    return World.parse(JSON.parse(value))
+  }
+  return initWorld()
+})()
+
 function useWorld(): [World, Updater<World>] {
-  const initialWorld = useMemo(initWorld, [])
-  const [world, setWorld] = useImmer(initialWorld)
+  const [world, setWorld] = useImmer(INITIAL_WORLD)
+  useEffect(() => {
+    localStorage.setItem('world', JSON.stringify(world))
+  }, [world])
   return [world, setWorld]
 }
 
