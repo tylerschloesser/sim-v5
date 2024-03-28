@@ -189,9 +189,30 @@ export function App() {
             velocity={velocity}
             scale={scale}
           />
+          <RenderAction viewport={viewport} scale={scale} />
         </>
       )}
     </svg>
+  )
+}
+
+interface RenderActionProps {
+  viewport: Vec2
+  scale: number
+}
+
+function RenderAction({
+  viewport,
+  scale,
+}: RenderActionProps) {
+  const r = scale
+  return (
+    <circle
+      cx={viewport.x / 2}
+      cy={viewport.y - r * 2}
+      r={r}
+      fill="red"
+    />
   )
 }
 
