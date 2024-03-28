@@ -225,7 +225,13 @@ export function App() {
             camera={camera}
             scale={scale}
           />
-          <RenderWorld
+          <RenderCells
+            viewport={viewport}
+            camera={camera}
+            scale={scale}
+            world={world}
+          />
+          <RenderPlayer
             viewport={viewport}
             camera={camera}
             scale={scale}
@@ -240,6 +246,8 @@ export function App() {
           />
           <RenderAction
             viewport={viewport}
+            camera={camera}
+            scale={scale}
             player={player}
             world={world}
             setWorld={setWorld}
@@ -277,6 +285,8 @@ function clearStone(point: Point) {
 
 interface RenderActionProps {
   viewport: Vec2
+  camera: Vec2
+  scale: number
   player: Player
   world: World
   setWorld: Updater<World>
@@ -284,6 +294,8 @@ interface RenderActionProps {
 
 function RenderAction({
   viewport,
+  camera,
+  scale,
   player,
   world,
   setWorld,
@@ -340,15 +352,37 @@ function RenderAction({
   }, [active, disabled])
 
   return (
-    <circle
-      onPointerDown={start}
-      onPointerUp={stop}
-      onPointerLeave={stop}
-      cx={viewport.x / 2}
-      cy={viewport.y - r * 2}
-      r={r}
-      fill={fill}
-    />
+    <>
+      <g
+        transform={svgTransform({
+          translate: viewport
+            .div(2)
+            .sub(
+              new Vec2(camera.x, camera.y * -1).mul(scale),
+            ),
+          scale: new Vec2(1, -1),
+        })}
+      >
+        {active && !disabled && (
+          <rect
+            x={player.point.x * scale}
+            y={player.point.y * scale}
+            width={scale}
+            height={scale}
+            fill={'pink'}
+          />
+        )}
+      </g>
+      <circle
+        onPointerDown={start}
+        onPointerUp={stop}
+        onPointerLeave={stop}
+        cx={viewport.x / 2}
+        cy={viewport.y - r * 2}
+        r={r}
+        fill={fill}
+      />
+    </>
   )
 }
 
@@ -507,22 +541,18 @@ function RenderGrid({
   )
 }
 
-interface RenderWorldProps {
+interface RenderCellsProps {
   viewport: Vec2
   camera: Vec2
   scale: number
   world: World
-  player: Player
-  path: Path
 }
-function RenderWorld({
+function RenderCells({
   viewport,
   camera,
   scale,
   world,
-  player,
-  path,
-}: RenderWorldProps) {
+}: RenderCellsProps) {
   return (
     <g
       transform={svgTransform({
@@ -546,49 +576,6 @@ function RenderWorld({
           />
         ),
       )}
-      <g>
-        <RenderPlayer
-          scale={scale}
-          player={player}
-          world={world}
-        />
-        {SHOW_PATH && path.length && (
-          <g fill="transparent">
-            {path.map(({ a, b }, i) => (
-              <line
-                stroke={i % 2 === 0 ? 'red' : 'cyan'}
-                key={i}
-                x1={a.x * scale}
-                y1={a.y * scale}
-                x2={b.x * scale}
-                y2={b.y * scale}
-              />
-            ))}
-            {path.map(({ point }, i) => (
-              <rect
-                stroke={i % 2 === 0 ? 'red' : 'cyan'}
-                key={i}
-                x={point.x * scale + 1}
-                y={point.y * scale + 1}
-                width={scale - 2}
-                height={scale - 2}
-              />
-            ))}
-          </g>
-        )}
-        {SHOW_TARGET_CELL && path.length && (
-          <g stroke="red" fill="transparent">
-            <SmoothRect
-              scale={scale}
-              translate={path.at(-1)!.point.mul(scale)}
-              x={0}
-              y={0}
-              width={scale}
-              height={scale}
-            />
-          </g>
-        )}
-      </g>
     </g>
   )
 }
@@ -811,14 +798,20 @@ function useHandlers(
 }
 
 interface RenderPlayerProps {
+  viewport: Vec2
+  camera: Vec2
   scale: number
   player: Player
+  path: Path
   world: World
 }
 
 function RenderPlayer({
+  viewport,
+  camera,
   scale,
   player,
+  path,
   world,
 }: RenderPlayerProps) {
   const cellId = toCellId(player.point)
@@ -828,12 +821,59 @@ function RenderPlayer({
     cell.type === CellType.enum.Grass ? 1 : 0.5
   const fill = `hsla(240, 100%, 50%, ${opacity})`
   return (
-    <circle
-      transform={svgTranslate(player.position.mul(scale))}
-      x={0}
-      y={0}
-      r={scale / 2}
-      fill={fill}
-    />
+    <g
+      transform={svgTransform({
+        translate: viewport
+          .div(2)
+          .sub(
+            new Vec2(camera.x, camera.y * -1).mul(scale),
+          ),
+        scale: new Vec2(1, -1),
+      })}
+    >
+      <circle
+        transform={svgTranslate(player.position.mul(scale))}
+        x={0}
+        y={0}
+        r={scale / 2}
+        fill={fill}
+      />
+      {SHOW_PATH && path.length && (
+        <g fill="transparent">
+          {path.map(({ a, b }, i) => (
+            <line
+              stroke={i % 2 === 0 ? 'red' : 'cyan'}
+              key={i}
+              x1={a.x * scale}
+              y1={a.y * scale}
+              x2={b.x * scale}
+              y2={b.y * scale}
+            />
+          ))}
+          {path.map(({ point }, i) => (
+            <rect
+              stroke={i % 2 === 0 ? 'red' : 'cyan'}
+              key={i}
+              x={point.x * scale + 1}
+              y={point.y * scale + 1}
+              width={scale - 2}
+              height={scale - 2}
+            />
+          ))}
+        </g>
+      )}
+      {SHOW_TARGET_CELL && path.length && (
+        <g stroke="red" fill="transparent">
+          <SmoothRect
+            scale={scale}
+            translate={path.at(-1)!.point.mul(scale)}
+            x={0}
+            y={0}
+            width={scale}
+            height={scale}
+          />
+        </g>
+      )}
+    </g>
   )
 }
