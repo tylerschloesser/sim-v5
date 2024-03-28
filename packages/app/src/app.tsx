@@ -532,15 +532,7 @@ function RenderWorld({
         ),
       )}
       <g>
-        <circle
-          transform={svgTranslate(
-            player.position.mul(scale),
-          )}
-          x={0}
-          y={0}
-          r={scale / 2}
-          fill="blue"
-        />
+        <RenderPlayer scale={scale} player={player} />
         {SHOW_PATH && path.length && (
           <g fill="transparent">
             {path.map(({ a, b }, i) => (
@@ -797,4 +789,24 @@ function useHandlers(
       onPointerCancel: clearDrag,
     }
   }, [])
+}
+
+interface RenderPlayerProps {
+  scale: number
+  player: Player
+}
+
+function RenderPlayer({
+  scale,
+  player,
+}: RenderPlayerProps) {
+  return (
+    <circle
+      transform={svgTranslate(player.position.mul(scale))}
+      x={0}
+      y={0}
+      r={scale / 2}
+      fill="blue"
+    />
+  )
 }
