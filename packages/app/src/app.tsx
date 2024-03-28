@@ -92,7 +92,7 @@ function useVelocity(
 
       setFromRelease((prev) => {
         invariant(prev)
-        const speed = prev.len() - dt * 100
+        const speed = prev.len() - dt * 50
         if (speed < 1e-4) {
           handle = null
           return null
