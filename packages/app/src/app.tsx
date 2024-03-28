@@ -532,7 +532,11 @@ function RenderWorld({
         ),
       )}
       <g>
-        <RenderPlayer scale={scale} player={player} />
+        <RenderPlayer
+          scale={scale}
+          player={player}
+          world={world}
+        />
         {SHOW_PATH && path.length && (
           <g fill="transparent">
             {path.map(({ a, b }, i) => (
@@ -794,19 +798,26 @@ function useHandlers(
 interface RenderPlayerProps {
   scale: number
   player: Player
+  world: World
 }
 
 function RenderPlayer({
   scale,
   player,
+  world,
 }: RenderPlayerProps) {
+  const cellId = toCellId(player.point)
+  const cell = world.cells[cellId]
+  invariant(cell)
+
+  const fill = `hsla(240, 100%, 50%, 1)`
   return (
     <circle
       transform={svgTranslate(player.position.mul(scale))}
       x={0}
       y={0}
       r={scale / 2}
-      fill="blue"
+      fill={fill}
     />
   )
 }
