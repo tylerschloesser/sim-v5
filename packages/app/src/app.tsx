@@ -306,26 +306,44 @@ function RenderAction({
       ? 'hsla(0, 50%, 50%, 1)'
       : 'hsla(0, 100%, 50%, 1)'
 
-  const onPointerUp = useCallback(() => {
-    if (disabled || !active) return
-    setWorld(clearStone(player.point))
-  }, [disabled, active, cellId])
+  const stop = useCallback(() => {
+    if (disabled) return
+    setActive(false)
+  }, [disabled])
 
-  const onPointerDown: React.PointerEventHandler =
-    useCallback(
-      (ev) => {
-        if (disabled) return
-        ev.stopPropagation()
-        setActive(true)
-      },
-      [disabled],
-    )
+  const start: React.PointerEventHandler = useCallback(
+    (ev) => {
+      if (disabled) return
+      ev.stopPropagation()
+      setActive(true)
+    },
+    [disabled],
+  )
+
+  const handler = useRef<number | null>(null)
+  useEffect(() => {
+    if (active && !disabled) {
+      // eslint-disable-next-line no-inner-declarations
+      function step() {
+        console.log('TODO do something')
+        handler.current = self.requestAnimationFrame(step)
+      }
+      invariant(handler.current === null)
+      handler.current = self.requestAnimationFrame(step)
+      return () => {
+        if (handler.current) {
+          self.cancelAnimationFrame(handler.current)
+          handler.current = null
+        }
+      }
+    }
+  }, [active, disabled])
 
   return (
     <circle
-      onPointerUp={onPointerUp}
-      onPointerDown={onPointerDown}
-      onPointerLeave={() => [setActive(false)]}
+      onPointerDown={start}
+      onPointerUp={stop}
+      onPointerLeave={stop}
       cx={viewport.x / 2}
       cy={viewport.y - r * 2}
       r={r}

@@ -1,7 +1,7 @@
 import { Vec2 } from './vec2.js'
 
 export const ALLOW_MOVE: boolean = true
-export const SHOW_GRID: boolean = true
+export const SHOW_GRID: boolean = false
 export const SHOW_PATH: boolean = false
 export const SHOW_TARGET_CELL: boolean = true
 
@@ -15,5 +15,5 @@ export function getScale(viewport: Vec2 | null) {
   if (viewport === null) {
     return null
   }
-  return Math.min(viewport.x, viewport.y) / 8
+  return Math.min(viewport.x, viewport.y) / 4
 }
