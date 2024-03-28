@@ -167,6 +167,12 @@ function usePlayer(): [
   return [player, setPlayer]
 }
 
+function useWorld(): [World, Updater<World>] {
+  const initialWorld = useMemo(initWorld, [])
+  const [world, setWorld] = useImmer(initialWorld)
+  return [world, setWorld]
+}
+
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
@@ -178,8 +184,7 @@ export function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const debug = useDebug()
   const svg = useRef<SVGSVGElement>(null)
-  const initialWorld = useMemo(initWorld, [])
-  const [world, setWorld] = useImmer(initialWorld)
+  const [world, setWorld] = useWorld()
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
   const [player, setPlayer] = usePlayer()
