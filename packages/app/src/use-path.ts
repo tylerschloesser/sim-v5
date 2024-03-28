@@ -2,8 +2,18 @@ import { useMemo } from 'react'
 import invariant from 'tiny-invariant'
 import { PATH_TIME } from './const.js'
 import { mod } from './math.js'
-import { CellType, Path, Player, World } from './types.js'
+import {
+  Cell,
+  CellType,
+  Path,
+  Player,
+  World,
+} from './types.js'
 import { Vec2 } from './vec2.js'
+
+function isCellBlocked(cell: Cell | null): boolean {
+  return cell === null || cell.type !== CellType.enum.Grass
+}
 
 export function usePath(
   player: Player,
@@ -23,13 +33,14 @@ export function usePath(
 
     let time = 0
     while (time !== PATH_TIME) {
-      let cell = new Vec2(
+      let point = new Vec2(
         stepX < 0 && x % 1 === 0 ? x - 1 : Math.floor(x),
         stepY < 0 && y % 1 === 0 ? y - 1 : Math.floor(y),
       )
-      invariant(cell.x % 1 === 0)
-      invariant(cell.y % 1 === 0)
-      const cellId = `${cell.x}.${cell.y}`
+      invariant(point.x % 1 === 0)
+      invariant(point.y % 1 === 0)
+      const cellId = `${point.x}.${point.y}`
+
       const cellType = world.cells[cellId]?.type
 
       let v: Vec2 | null = velocity
@@ -46,14 +57,14 @@ export function usePath(
           for (const axis of order) {
             if (axis === 'x') {
               const adjacent = new Vec2(
-                cell.x,
-                cell.y - stepY,
+                point.x,
+                point.y - stepY,
               )
               const adjacentId = `${adjacent.x}.${adjacent.y}`
               const adjacentType =
                 world.cells[adjacentId]?.type
               if (adjacentType === CellType.enum.Grass) {
-                cell = adjacent
+                point = adjacent
                 v = new Vec2(v.x, 0)
                 found = true
                 break
@@ -61,14 +72,14 @@ export function usePath(
             } else {
               invariant(axis === 'y')
               const adjacent = new Vec2(
-                cell.x - stepX,
-                cell.y,
+                point.x - stepX,
+                point.y,
               )
               const adjacentId = `${adjacent.x}.${adjacent.y}`
               const adjacentType =
                 world.cells[adjacentId]?.type
               if (adjacentType === CellType.enum.Grass) {
-                cell = adjacent
+                point = adjacent
                 v = new Vec2(0, v.y)
                 found = true
                 break
@@ -82,26 +93,32 @@ export function usePath(
           //
           // we are on the y axis, attempt to move in the y direction
           //
-          const adjacent = new Vec2(cell.x - stepX, cell.y)
+          const adjacent = new Vec2(
+            point.x - stepX,
+            point.y,
+          )
           const adjacentId = `${adjacent.x}.${adjacent.y}`
           const adjacentType = world.cells[adjacentId]?.type
           if (adjacentType !== CellType.enum.Grass) {
             v = null
           } else {
-            cell = adjacent
+            point = adjacent
             v = new Vec2(0, v.y)
           }
         } else if (y % 1 === 0) {
           //
           // we are on the x axis, attempt to move in the x direction
           //
-          const adjacent = new Vec2(cell.x, cell.y - stepY)
+          const adjacent = new Vec2(
+            point.x,
+            point.y - stepY,
+          )
           const adjacentId = `${adjacent.x}.${adjacent.y}`
           const adjacentType = world.cells[adjacentId]?.type
           if (adjacentType !== CellType.enum.Grass) {
             v = null
           } else {
-            cell = adjacent
+            point = adjacent
             v = new Vec2(v.x, 0)
           }
         } else {
@@ -166,7 +183,7 @@ export function usePath(
         b,
         t,
         v,
-        cell,
+        point,
       })
     }
 

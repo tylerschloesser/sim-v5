@@ -22,6 +22,8 @@ export interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
+type Point = Vec2
+
 export interface Player {
   position: Vec2
   cellId: string
@@ -32,5 +34,5 @@ export type Path = Array<{
   b: Vec2
   v: Vec2
   t: number
-  cell: Vec2
+  point: Point
 }>

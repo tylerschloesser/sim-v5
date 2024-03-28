@@ -48,7 +48,7 @@ function move(
       elapsed -= part.t
     }
 
-    cellId = `${part.cell.x}.${part.cell.y}`
+    cellId = `${part.point.x}.${part.point.y}`
   }
 
   return { position, cellId }
@@ -483,12 +483,12 @@ function RenderWorld({
                 y2={b.y * scale}
               />
             ))}
-            {path.map(({ cell }, i) => (
+            {path.map(({ point }, i) => (
               <rect
                 stroke={i % 2 === 0 ? 'red' : 'cyan'}
                 key={i}
-                x={cell.x * scale + 1}
-                y={cell.y * scale + 1}
+                x={point.x * scale + 1}
+                y={point.y * scale + 1}
                 width={scale - 2}
                 height={scale - 2}
               />
@@ -499,7 +499,7 @@ function RenderWorld({
           <g stroke="red" fill="transparent">
             <SmoothRect
               scale={scale}
-              translate={path.at(-1)!.cell.mul(scale)}
+              translate={path.at(-1)!.point.mul(scale)}
               x={0}
               y={0}
               width={scale}
