@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
-import { MAX_SPEED } from '../const.js'
+import { MAX_SPEED } from './const.js'
 import { Drag } from './types.js'
 import { Vec2 } from './vec2.js'
 
