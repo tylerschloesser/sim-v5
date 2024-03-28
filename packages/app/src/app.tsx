@@ -189,7 +189,12 @@ export function App() {
             velocity={velocity}
             scale={scale}
           />
-          <RenderAction viewport={viewport} scale={scale} />
+          <RenderAction
+            viewport={viewport}
+            scale={scale}
+            player={player}
+            world={world}
+          />
         </>
       )}
     </svg>
@@ -199,14 +204,26 @@ export function App() {
 interface RenderActionProps {
   viewport: Vec2
   scale: number
+  player: Vec2
+  world: World
 }
 
 function RenderAction({
   viewport,
   scale,
+  player,
+  world,
 }: RenderActionProps) {
   const r = scale * 1.5
-  const fill = `hsla(0, 100%, 50%, 1)`
+
+  const cellId = `${Math.floor(player.x)}.${Math.floor(player.y)}`
+  const cell = world.cells[cellId]
+  invariant(cell)
+
+  const disabled = cell.type === CellType.enum.Grass
+
+  const fill = `hsla(0, 100%, 50%, ${disabled ? 0.5 : 1})`
+
   return (
     <circle
       onPointerUp={() => {
