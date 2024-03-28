@@ -14,6 +14,7 @@ import {
   SHOW_GRID,
   SHOW_PATH,
   SHOW_TARGET_CELL,
+  getScale,
 } from './const.js'
 import { radiansToDegrees } from './math.js'
 import {
@@ -187,9 +188,7 @@ export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
 
-  const scale = viewport
-    ? Math.min(viewport.x, viewport.y) / 10
-    : null
+  const scale = getScale(viewport)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const debug = useDebug()
