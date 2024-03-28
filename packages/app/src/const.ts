@@ -15,5 +15,5 @@ export function getScale(viewport: Vec2 | null) {
   if (viewport === null) {
     return null
   }
-  return Math.min(viewport.x, viewport.y) / 10
+  return Math.min(viewport.x, viewport.y) / 8
 }

@@ -334,17 +334,16 @@ function RenderAction({
   )
 }
 
-function* iterateGridLines(viewport: Vec2): Generator<{
+function* iterateGridLines(
+  viewport: Vec2,
+  scale: number,
+): Generator<{
   key: string
   x1: number
   y1: number
   x2: number
   y2: number
 }> {
-  const scale = viewport
-    ? Math.min(viewport.x, viewport.y) / 10
-    : 0
-
   const rows = Math.ceil(viewport.y / scale) + 1
   const cols = Math.ceil(viewport.x / scale) + 1
 
@@ -475,7 +474,7 @@ function RenderGrid({
       strokeWidth={2}
       stroke="hsl(0, 0%, 10%)"
     >
-      {Array.from(iterateGridLines(viewport)).map(
+      {Array.from(iterateGridLines(viewport, scale)).map(
         ({ key, x1, y1, x2, y2 }) => (
           <line
             key={key}
