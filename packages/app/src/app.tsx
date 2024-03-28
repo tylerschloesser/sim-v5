@@ -290,7 +290,7 @@ function RenderAction({
 }: RenderActionProps) {
   const vmin = Math.min(viewport.x, viewport.y)
 
-  const r = vmin / 10
+  const r = vmin / 8
 
   const cellId = toCellId(player.point)
   const cell = world.cells[cellId]
