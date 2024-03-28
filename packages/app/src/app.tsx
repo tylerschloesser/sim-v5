@@ -240,7 +240,6 @@ export function App() {
           />
           <RenderAction
             viewport={viewport}
-            scale={scale}
             player={player}
             world={world}
             setWorld={setWorld}
@@ -249,14 +248,6 @@ export function App() {
       )}
     </svg>
   )
-}
-
-interface RenderActionProps {
-  viewport: Vec2
-  scale: number
-  player: Player
-  world: World
-  setWorld: Updater<World>
 }
 
 function clearStone(point: Point) {
@@ -284,14 +275,22 @@ function clearStone(point: Point) {
   }
 }
 
+interface RenderActionProps {
+  viewport: Vec2
+  player: Player
+  world: World
+  setWorld: Updater<World>
+}
+
 function RenderAction({
   viewport,
-  scale,
   player,
   world,
   setWorld,
 }: RenderActionProps) {
-  const r = scale * 1.5
+  const vmin = Math.min(viewport.x, viewport.y)
+
+  const r = vmin / 10
 
   const cellId = toCellId(player.point)
   const cell = world.cells[cellId]
