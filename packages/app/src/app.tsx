@@ -809,8 +809,9 @@ function RenderPlayer({
   const cellId = toCellId(player.point)
   const cell = world.cells[cellId]
   invariant(cell)
-
-  const fill = `hsla(240, 100%, 50%, 1)`
+  const opacity =
+    cell.type === CellType.enum.Grass ? 1 : 0.5
+  const fill = `hsla(240, 100%, 50%, ${opacity})`
   return (
     <circle
       transform={svgTranslate(player.position.mul(scale))}
