@@ -244,7 +244,7 @@ export function App() {
             velocity={velocity}
             scale={scale}
           />
-          <RenderAction
+          <RenderActionButton
             viewport={viewport}
             camera={camera}
             scale={scale}
@@ -283,7 +283,7 @@ function clearStone(point: Point) {
   }
 }
 
-interface RenderActionProps {
+interface RenderActionButtonProps {
   viewport: Vec2
   camera: Vec2
   scale: number
@@ -292,14 +292,14 @@ interface RenderActionProps {
   setWorld: Updater<World>
 }
 
-function RenderAction({
+function RenderActionButton({
   viewport,
   camera,
   scale,
   player,
   world,
   setWorld,
-}: RenderActionProps) {
+}: RenderActionButtonProps) {
   const vmin = Math.min(viewport.x, viewport.y)
 
   const r = vmin / 8
