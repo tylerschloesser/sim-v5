@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import { PATH_TIME } from './const.js'
 import { mod } from './math.js'
 import { Cell, Path, Player, World } from './types.js'
+import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
 
 function isCellBlocked(cell: Cell | undefined): boolean {
@@ -36,7 +37,7 @@ export function usePath(
       )
       invariant(point.x % 1 === 0)
       invariant(point.y % 1 === 0)
-      const cellId = `${point.x}.${point.y}`
+      const cellId = toCellId(point)
       const cell = world.cells[cellId]
 
       let v: Vec2 | null = velocity

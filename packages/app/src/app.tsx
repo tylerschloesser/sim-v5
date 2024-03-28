@@ -247,7 +247,7 @@ interface RenderActionProps {
 
 function clearStone(point: Point) {
   return function update(draft: World): void {
-    const cellId = `${point.x}.${point.y}`
+    const cellId = toCellId(point)
     const cell = draft.cells[cellId]
     invariant(cell?.type === CellType.enum.Stone)
     cell.type = CellType.enum.Grass
