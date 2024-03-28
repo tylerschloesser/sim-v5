@@ -246,15 +246,19 @@ function RenderAction({
   const cell = world.cells[cellId]
   invariant(cell)
 
-  const disabled = cell.type === CellType.enum.Grass
+  const disabled = cell.type !== CellType.enum.Stone
 
   const fill = `hsla(0, 100%, 50%, ${disabled ? 0.5 : 1})`
 
+  const onPointerUp = disabled
+    ? undefined
+    : () => {
+        console.log('todo')
+      }
+
   return (
     <circle
-      onPointerUp={() => {
-        console.log('TODO')
-      }}
+      onPointerUp={onPointerUp}
       onPointerDown={(ev) => {
         ev.stopPropagation()
       }}
