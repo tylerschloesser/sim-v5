@@ -170,7 +170,8 @@ export function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const debug = useDebug()
   const svg = useRef<SVGSVGElement>(null)
-  const world = useMemo(initWorld, [])
+  const initialWorld = useMemo(initWorld, [])
+  const [world, setWorld] = useImmer(initialWorld)
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
   const [player, setPlayer] = usePlayer()
@@ -220,6 +221,7 @@ export function App() {
             scale={scale}
             player={player}
             world={world}
+            setWorld={setWorld}
           />
         </>
       )}
@@ -232,6 +234,7 @@ interface RenderActionProps {
   scale: number
   player: Player
   world: World
+  setWorld: Updater<World>
 }
 
 function RenderAction({
