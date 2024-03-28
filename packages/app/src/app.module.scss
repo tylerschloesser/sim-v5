@@ -5,4 +5,8 @@
 
   touch-action: none;
   user-select: none;
+
+  * {
+    transition: fill 0.5s;
+  }
 }
