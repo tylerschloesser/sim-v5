@@ -1,3 +1,4 @@
+import Prando from 'prando'
 import {
   useCallback,
   useEffect,
@@ -201,7 +202,9 @@ export function App() {
   const [player, setPlayer] = usePlayer()
   const path = usePath(player, velocity, world)
 
-  const [action, setAction] = useState<Action | null>(null)
+  const [action, setAction] = useState<Action | null>(
+    'clear-stone',
+  )
 
   useMovePlayer(setPlayer, path, debug)
 
@@ -315,6 +318,29 @@ function RenderAction({
   const cellId = toCellId(player.point)
   const cell = world.cells[cellId]
   invariant(cell)
+
+  const rng = useMemo(() => new Prando(0), [])
+
+  const ref = useRef<SVGGElement>(null)
+  useEffect(() => {
+    if (!action) return
+    invariant(ref.current)
+    ref.current.animate(
+      [
+        { transform: 'scale(1) rotate(0)', offset: 0 },
+        {
+          transform: 'scale(1.1) rotate(10deg)',
+          offset: 0.1,
+        },
+        { transform: 'scale(1) rotate(0)', offset: 0.2 },
+      ],
+      {
+        duration: 500,
+        iterations: Infinity,
+      },
+    )
+  }, [action])
+
   return (
     <g
       transform={svgTransform({
@@ -327,13 +353,24 @@ function RenderAction({
       })}
     >
       {action && (
-        <rect
-          x={player.point.x * scale}
-          y={player.point.y * scale}
-          width={scale}
-          height={scale}
-          fill={'pink'}
-        />
+        <g
+          transform={`translate(${player.point.x * scale} ${player.point.y * scale})`}
+        >
+          <g
+            ref={ref}
+            style={{
+              transformOrigin: `${scale / 2}px ${scale / 2}px`,
+              // transformOrigin: '50% 50%',
+            }}
+          >
+            <rect
+              width={scale}
+              height={scale}
+              fill={cell.color}
+              opacity={0.5}
+            />
+          </g>
+        </g>
       )}
     </g>
   )
