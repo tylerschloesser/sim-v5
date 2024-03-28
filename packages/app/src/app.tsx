@@ -2,10 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import * as z from 'zod'
-import { ALLOW_MOVE, PATH_TIME } from '../const.js'
+import {
+  ALLOW_MOVE,
+  PATH_TIME,
+  SHOW_GRID,
+  SHOW_PATH,
+  SHOW_TARGET_CELL,
+} from '../const.js'
 import styles from './app.module.scss'
 import { mod, radiansToDegrees } from './math.js'
 import { CellType, Drag, Path, World } from './types.js'
+import { useVelocity } from './use-velocity.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
