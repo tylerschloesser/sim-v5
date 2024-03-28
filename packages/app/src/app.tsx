@@ -206,6 +206,7 @@ function RenderAction({
   scale,
 }: RenderActionProps) {
   const r = scale * 1.5
+  const fill = `hsla(0, 100%, 50%, 1)`
   return (
     <circle
       onPointerUp={() => {
@@ -217,7 +218,7 @@ function RenderAction({
       cx={viewport.x / 2}
       cy={viewport.y - r * 2}
       r={r}
-      fill="red"
+      fill={fill}
     />
   )
 }
