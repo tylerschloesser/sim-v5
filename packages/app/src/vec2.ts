@@ -5,11 +5,20 @@ export class Vec2 {
   x: number
   y: number
 
-  constructor(x: number, y: number) {
-    invariant(!Number.isNaN(x))
-    invariant(!Number.isNaN(y))
-    this.x = x
-    this.y = y
+  constructor(v: Vec2)
+  constructor(x: number, y: number)
+  constructor(x: number | Vec2, y?: number) {
+    if (x instanceof Vec2) {
+      invariant(typeof y === 'undefined')
+      this.x = x.x
+      this.y = x.y
+    } else {
+      invariant(typeof y === 'number')
+      invariant(!Number.isNaN(x))
+      invariant(!Number.isNaN(y))
+      this.x = x
+      this.y = y
+    }
   }
 
   add(v: Vec2): Vec2 {

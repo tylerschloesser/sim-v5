@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 import invariant from 'tiny-invariant'
 import { PATH_TIME } from './const.js'
 import { mod } from './math.js'
-import { CellType, Path, World } from './types.js'
+import { CellType, Path, Player, World } from './types.js'
 import { Vec2 } from './vec2.js'
 
 export function usePath(
-  player: Vec2,
+  player: Player,
   velocity: Vec2,
   world: World,
 ): Path {
@@ -17,9 +17,9 @@ export function usePath(
 
     const stepX = Math.sign(velocity.x)
     const stepY = Math.sign(velocity.y)
-    let { x, y } = player
+    let { x, y } = player.position
     const path: Path = []
-    let u = player
+    let u = player.position
 
     let time = 0
     while (time !== PATH_TIME) {

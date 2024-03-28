@@ -23,28 +23,35 @@ import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
 function move(
-  position: Vec2,
+  player: Player,
   path: Path,
   elapsed: number,
-): Vec2 {
-  if (ALLOW_MOVE) {
-    for (let i = 0; i < path.length && elapsed > 0; i++) {
-      const part = path.at(i)
-      invariant(part)
+): Player {
+  if (!ALLOW_MOVE || path.length === 0 || elapsed === 0) {
+    return player
+  }
 
-      if (elapsed < part.t) {
-        position = part.a.add(part.v.mul(elapsed))
-        elapsed = 0
-      } else {
-        position = part.b
-        elapsed -= part.t
-      }
+  invariant(elapsed > 0)
+
+  let position = new Vec2(player.position)
+  let cellId = player.cellId
+
+  for (let i = 0; i < path.length && elapsed > 0; i++) {
+    const part = path.at(i)
+    invariant(part)
+
+    if (elapsed < part.t) {
+      position = part.a.add(part.v.mul(elapsed))
+      elapsed = 0
+    } else {
+      position = part.b
+      elapsed -= part.t
     }
 
-    return position
-  } else {
-    return position
+    cellId = `${part.cell.x}.${part.cell.y}`
   }
+
+  return { position, cellId }
 }
 
 function useMovePlayer(
@@ -117,15 +124,27 @@ function useDebug() {
 const INITIAL_PLAYER = (() => {
   const value = localStorage.getItem('player')
   if (value) {
-    const { x, y } = z
+    const {
+      position: { x, y },
+      cellId,
+    } = z
       .strictObject({
-        x: z.number(),
-        y: z.number(),
+        position: z.strictObject({
+          x: z.number(),
+          y: z.number(),
+        }),
+        cellId: z.string(),
       })
       .parse(JSON.parse(value))
-    return new Vec2(x, y)
+    return {
+      position: new Vec2(x, y),
+      cellId,
+    }
   }
-  return new Vec2(0, 0)
+  return {
+    position: new Vec2(0, 0),
+    cellId: '0.0',
+  }
 })()
 
 function usePlayer(): [
@@ -159,7 +178,7 @@ export function App() {
 
   useMovePlayer(setPlayer, path, debug)
 
-  const camera = player
+  const camera = player.position
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
@@ -223,7 +242,7 @@ function RenderAction({
 }: RenderActionProps) {
   const r = scale * 1.5
 
-  const cellId = `${Math.floor(player.x)}.${Math.floor(player.y)}`
+  const cellId = `${Math.floor(player.position.x)}.${Math.floor(player.position.y)}`
   const cell = world.cells[cellId]
   invariant(cell)
 
@@ -444,7 +463,9 @@ function RenderWorld({
       )}
       <g>
         <circle
-          transform={svgTranslate(player.mul(scale))}
+          transform={svgTranslate(
+            player.position.mul(scale),
+          )}
           x={0}
           y={0}
           r={scale / 2}
