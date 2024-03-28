@@ -4,7 +4,7 @@ import { Updater, useImmer } from 'use-immer'
 import * as z from 'zod'
 import styles from './app.module.scss'
 import { mod, radiansToDegrees } from './math.js'
-import { CellType, World } from './types.js'
+import { CellType, Drag, Path, World } from './types.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
@@ -17,22 +17,7 @@ const MAX_SPEED = 20
 
 // How far ahead (in seconds) to simulate the path.
 // The time step cannot be greater than this.
-const PATH_TIME = 1
-
-type PointerId = number
-
-interface Drag {
-  pointerId: PointerId
-  events: { time: number; position: Vec2 }[]
-}
-
-type Path = Array<{
-  a: Vec2
-  b: Vec2
-  v: Vec2
-  t: number
-  cell: Vec2
-}>
+const PATH_TIME = 0.1
 
 function useVelocity(
   scale: number | null,
