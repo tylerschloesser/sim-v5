@@ -5,10 +5,13 @@ export class Vec2 {
   x: number
   y: number
 
-  constructor(v: Vec2)
+  constructor(v: { x: number; y: number })
   constructor(x: number, y: number)
-  constructor(x: number | Vec2, y?: number) {
-    if (x instanceof Vec2) {
+  constructor(
+    x: number | { x: number; y: number },
+    y?: number,
+  ) {
+    if (x instanceof Object) {
       invariant(typeof y === 'undefined')
       this.x = x.x
       this.y = x.y

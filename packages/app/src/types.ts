@@ -22,11 +22,11 @@ export interface Drag {
   events: { time: number; position: Vec2 }[]
 }
 
-type Point = Vec2
+export type Point = Vec2
 
 export interface Player {
   position: Vec2
-  cellId: string
+  point: Vec2
 }
 
 export type Path = Array<{

@@ -1,4 +1,3 @@
-import { drop, setWith } from 'lodash-es'
 import {
   useCallback,
   useEffect,
@@ -22,10 +21,12 @@ import {
   Drag,
   Path,
   Player,
+  Point,
   World,
 } from './types.js'
 import { usePath } from './use-path.js'
 import { useVelocity } from './use-velocity.js'
+import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
 import { getCellColor, initWorld } from './world.js'
 
@@ -41,7 +42,7 @@ function move(
   invariant(elapsed > 0)
 
   let position = new Vec2(player.position)
-  let cellId = player.cellId
+  let point = player.point
 
   for (let i = 0; i < path.length && elapsed > 0; i++) {
     const part = path.at(i)
@@ -55,10 +56,10 @@ function move(
       elapsed -= part.t
     }
 
-    cellId = `${part.point.x}.${part.point.y}`
+    point = part.point
   }
 
-  return { position, cellId }
+  return { position, point }
 }
 
 function useMovePlayer(
@@ -131,26 +132,26 @@ function useDebug() {
 const INITIAL_PLAYER = (() => {
   const value = localStorage.getItem('player')
   if (value) {
-    const {
-      position: { x, y },
-      cellId,
-    } = z
+    const { position, point } = z
       .strictObject({
         position: z.strictObject({
           x: z.number(),
           y: z.number(),
         }),
-        cellId: z.string(),
+        point: z.strictObject({
+          x: z.number(),
+          y: z.number(),
+        }),
       })
       .parse(JSON.parse(value))
     return {
-      position: new Vec2(x, y),
-      cellId,
+      position: new Vec2(position),
+      point: new Vec2(point),
     }
   }
   return {
     position: new Vec2(0, 0),
-    cellId: '0.0',
+    point: new Vec2(0, 0),
   }
 })()
 
@@ -244,12 +245,28 @@ interface RenderActionProps {
   setWorld: Updater<World>
 }
 
-function clearStone(cellId: string) {
+function clearStone(point: Point) {
   return function update(draft: World): void {
+    const cellId = `${point.x}.${point.y}`
     const cell = draft.cells[cellId]
     invariant(cell?.type === CellType.enum.Stone)
     cell.type = CellType.enum.Grass
     cell.color = getCellColor(cell.type)
+
+    for (const [dx, dy] of new Array<[number, number]>(
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    )) {
+      const adjacentId = `${point.x + dx}.${point.y + dy}`
+      const adjacent = draft.cells[adjacentId]
+      if (!adjacent) {
+        const type = CellType.enum.Stone
+        const color = getCellColor(type)
+        draft.cells[adjacentId] = { type, color }
+      }
+    }
   }
 }
 
@@ -262,7 +279,7 @@ function RenderAction({
 }: RenderActionProps) {
   const r = scale * 1.5
 
-  const { cellId } = player
+  const cellId = toCellId(player.point)
   const cell = world.cells[cellId]
   invariant(cell)
 
@@ -272,7 +289,7 @@ function RenderAction({
 
   const onPointerUp = useCallback(() => {
     if (disabled) return
-    setWorld(clearStone(cellId))
+    setWorld(clearStone(player.point))
   }, [disabled, cellId])
 
   return (
