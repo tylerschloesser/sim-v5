@@ -27,6 +27,7 @@ import {
   Point,
   World,
 } from './types.js'
+import { useCamera } from './use-camera.js'
 import { usePath } from './use-path.js'
 import { useVelocity } from './use-velocity.js'
 import { toCellId } from './util.js'
@@ -188,26 +189,26 @@ function useWorld(): [World, Updater<World>] {
   return [world, setWorld]
 }
 
+function useScale(viewport: Vec2 | null): number | null {
+  return useMemo(() => getScale(viewport), [viewport])
+}
+
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
 
-  const scale = getScale(viewport)
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const debug = useDebug()
+  const scale = useScale(viewport)
   const svg = useRef<SVGSVGElement>(null)
   const [world, setWorld] = useWorld()
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
   const [player, setPlayer] = usePlayer()
   const path = usePath(player, velocity, world)
-
   const [action, setAction] = useState<Action | null>(null)
-
   useMovePlayer(setPlayer, path, debug)
-
-  const camera = player.position
+  const camera = useCamera(player)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
