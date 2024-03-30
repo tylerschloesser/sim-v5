@@ -1,3 +1,4 @@
+import { times } from 'lodash-es'
 import Prando from 'prando'
 import {
   useCallback,
@@ -202,9 +203,7 @@ export function App() {
   const [player, setPlayer] = usePlayer()
   const path = usePath(player, velocity, world)
 
-  const [action, setAction] = useState<Action | null>(
-    'clear-stone',
-  )
+  const [action, setAction] = useState<Action | null>(null)
 
   useMovePlayer(setPlayer, path, debug)
 
@@ -315,30 +314,46 @@ function RenderAction({
   world,
   action,
 }: RenderActionProps) {
+  const d = 5
+  const rng = useMemo(() => new Prando(0), [])
+
   const cellId = toCellId(player.point)
   const cell = world.cells[cellId]
   invariant(cell)
 
-  const rng = useMemo(() => new Prando(0), [])
+  const [pixels, setPixels] = useState(
+    new Array<string>(d ** 2).fill('transparent'),
+  )
 
   const ref = useRef<SVGGElement>(null)
   useEffect(() => {
     if (!action) return
     invariant(ref.current)
-    ref.current.animate(
-      [
-        { transform: 'scale(1) rotate(0)', offset: 0 },
-        {
-          transform: 'scale(1.1) rotate(10deg)',
-          offset: 0.1,
-        },
-        { transform: 'scale(1) rotate(0)', offset: 0.2 },
-      ],
-      {
-        duration: 500,
-        iterations: Infinity,
-      },
-    )
+    ref.current.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 250,
+    })
+  }, [action])
+
+  const interval = useRef<number | null>(null)
+  useEffect(() => {
+    if (!action) return
+    invariant(interval.current === null)
+    let count = 0
+    interval.current = self.setInterval(() => {
+      setPixels(() => {
+        return new Array(d ** 2)
+          .fill(null)
+          .map(
+            () =>
+              `hsla(0, 0%, 0%, ${rng.next() * Math.min((count + 1) * 0.1, 1)})`,
+          )
+      })
+      count += 1
+    }, 250)
+    return () => {
+      self.clearInterval(interval.current ?? undefined)
+      interval.current = null
+    }
   }, [action])
 
   return (
@@ -360,15 +375,23 @@ function RenderAction({
             ref={ref}
             style={{
               transformOrigin: `${scale / 2}px ${scale / 2}px`,
-              // transformOrigin: '50% 50%',
             }}
           >
             <rect
               width={scale}
               height={scale}
               fill={cell.color}
-              opacity={0.5}
             />
+            {times(d ** 2).map((i) => (
+              <rect
+                key={i}
+                x={Math.floor(i / d) * (scale / d)}
+                y={(i % d) * (scale / d)}
+                width={scale / d}
+                height={scale / d}
+                fill={pixels[i]}
+              />
+            ))}
           </g>
         </g>
       )}
