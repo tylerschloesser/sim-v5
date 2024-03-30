@@ -19,7 +19,7 @@ export function useCamera(player: Player): Vec2 {
         }
         handle = self.requestAnimationFrame(step)
 
-        const speed = (d.len() + 1) ** 2.5 - 1
+        const speed = (d.len() + 1) ** 3 - 1
         return prev.add(d.norm().mul(speed * elapsed))
       })
     }
