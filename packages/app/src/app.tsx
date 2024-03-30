@@ -273,6 +273,7 @@ export function App() {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function clearStone(point: Point) {
   return function update(draft: World): void {
     const cellId = toCellId(point)
@@ -415,7 +416,6 @@ function RenderActionButton({
   viewport,
   player,
   world,
-  setWorld,
   action,
   setAction,
 }: RenderActionButtonProps) {
