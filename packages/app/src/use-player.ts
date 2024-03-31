@@ -1,17 +1,36 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { smooth } from './const.js'
-import { Cursor } from './types.js'
+import { Cursor, Path } from './types.js'
 import { Vec2 } from './vec2.js'
 
-export function usePlayer(cursor: Cursor): Vec2 {
+function useTarget(
+  cursor: Cursor,
+  path: Path,
+): React.MutableRefObject<Vec2> {
+  const target = useMemo<Vec2>(() => {
+    const last = path.at(-1)
+    if (!last) {
+      return cursor.point.add(0.5)
+    }
+    const v = last.point.sub(cursor.point)
+    return cursor.point.add(v.div(2)).add(0.5)
+  }, [cursor, path])
+  const ref = useRef(target)
+  useEffect(() => {
+    ref.current = target
+  }, [target])
+  return ref
+}
+
+export function usePlayer(
+  cursor: Cursor,
+  path: Path,
+): Vec2 {
   const [player, setPlayer] = useState(
     cursor.point.add(0.5),
   )
 
-  const target = useRef(cursor.position)
-  useEffect(() => {
-    target.current = cursor.point.add(0.5)
-  }, [cursor])
+  const target = useTarget(cursor, path)
 
   useEffect(() => {
     let handle: number
