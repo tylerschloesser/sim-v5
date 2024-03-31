@@ -15,7 +15,6 @@ import {
   ALLOW_MOVE,
   SHOW_GRID,
   SHOW_PATH,
-  SHOW_TARGET_CELL,
   getScale,
 } from './const.js'
 import { radiansToDegrees } from './math.js'
@@ -248,11 +247,16 @@ export function App() {
             cursor={cursor}
             action={action}
           />
+          <RenderPlayer
+            viewport={viewport}
+            camera={camera}
+            scale={scale}
+            player={player}
+          />
           <RenderCursor
             viewport={viewport}
             camera={camera}
             scale={scale}
-            world={world}
             cursor={cursor}
             path={path}
           />
@@ -900,29 +904,18 @@ function useHandlers(
   }, [])
 }
 
-interface RenderCursorProps {
+interface RenderPlayerProps {
   viewport: Vec2
   camera: Vec2
   scale: number
-  cursor: Cursor
-  path: Path
-  world: World
+  player: Vec2
 }
-
-function RenderCursor({
+function RenderPlayer({
   viewport,
   camera,
   scale,
-  cursor,
-  path,
-  world,
-}: RenderCursorProps) {
-  const cellId = toCellId(cursor.point)
-  const cell = world.cells[cellId]
-  invariant(cell)
-  const opacity =
-    cell.type === CellType.enum.Grass ? 1 : 0.5
-  const fill = `hsla(240, 100%, 50%, ${opacity})`
+  player,
+}: RenderPlayerProps) {
   return (
     <g
       transform={svgTransform({
@@ -935,12 +928,52 @@ function RenderCursor({
       })}
     >
       <circle
-        transform={svgTranslate(cursor.position.mul(scale))}
+        transform={svgTranslate(player.mul(scale))}
         x={0}
         y={0}
         r={scale / 2}
-        fill={fill}
+        fill="blue"
       />
+    </g>
+  )
+}
+
+interface RenderCursorProps {
+  viewport: Vec2
+  camera: Vec2
+  scale: number
+  cursor: Cursor
+  path: Path
+}
+
+function RenderCursor({
+  viewport,
+  camera,
+  scale,
+  cursor,
+  path,
+}: RenderCursorProps) {
+  return (
+    <g
+      transform={svgTransform({
+        translate: viewport
+          .div(2)
+          .sub(
+            new Vec2(camera.x, camera.y * -1).mul(scale),
+          ),
+        scale: new Vec2(1, -1),
+      })}
+    >
+      <g stroke="red" fill="transparent">
+        <SmoothRect
+          scale={scale}
+          translate={cursor.point.mul(scale)}
+          x={0}
+          y={0}
+          width={scale}
+          height={scale}
+        />
+      </g>
       {SHOW_PATH && path.length && (
         <g fill="transparent">
           {path.map(({ a, b }, i) => (
@@ -963,18 +996,6 @@ function RenderCursor({
               height={scale - 2}
             />
           ))}
-        </g>
-      )}
-      {SHOW_TARGET_CELL && path.length && (
-        <g stroke="red" fill="transparent">
-          <SmoothRect
-            scale={scale}
-            translate={path.at(-1)!.point.mul(scale)}
-            x={0}
-            y={0}
-            width={scale}
-            height={scale}
-          />
         </g>
       )}
     </g>
