@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Path } from './types.js'
+import { Cursor, Path } from './types.js'
 import { Vec2 } from './vec2.js'
 
-function useTarget(player: Vec2, path: Path) {
+function useTarget(cursor: Cursor, path: Path) {
   const next = useMemo(() => {
     const last = path.at(-1)
     if (last) {
       return last.b
     }
-    return player
-  }, [player, path])
+    return cursor.position
+  }, [cursor, path])
   const target = useRef(next)
   useEffect(() => {
     target.current = next
@@ -17,8 +17,11 @@ function useTarget(player: Vec2, path: Path) {
   return target
 }
 
-export function useCamera(player: Vec2, path: Path): Vec2 {
-  const target = useTarget(player, path)
+export function useCamera(
+  cursor: Cursor,
+  path: Path,
+): Vec2 {
+  const target = useTarget(cursor, path)
   const [camera, setCamera] = useState(target.current)
   useEffect(() => {
     let handle: number
@@ -35,7 +38,7 @@ export function useCamera(player: Vec2, path: Path): Vec2 {
         if (d.len() < 1e-3) {
           return target.current
         }
-        const speed = (d.len() + 1) ** 3 - 1
+        const speed = (d.len() + 1) ** 2.5 - 1
         return prev.add(d.norm().mul(speed * elapsed))
       })
       handle = self.requestAnimationFrame(step)
