@@ -1,6 +1,5 @@
 import { Vec2 } from './vec2.js'
 
-export const ALLOW_MOVE: boolean = true
 export const SHOW_GRID: boolean = false
 export const SHOW_PATH: boolean = true
 

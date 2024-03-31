@@ -11,12 +11,7 @@ import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import * as z from 'zod'
 import styles from './app.module.scss'
-import {
-  ALLOW_MOVE,
-  SHOW_GRID,
-  SHOW_PATH,
-  getScale,
-} from './const.js'
+import { SHOW_GRID, SHOW_PATH, getScale } from './const.js'
 import { radiansToDegrees } from './math.js'
 import {
   CellType,
@@ -35,72 +30,6 @@ import { Vec2 } from './vec2.js'
 import { getCellColor, initWorld } from './world.js'
 
 type Action = 'clear-stone'
-
-function move(
-  cursor: Cursor,
-  path: Path,
-  elapsed: number,
-): Cursor {
-  if (!ALLOW_MOVE || path.length === 0 || elapsed === 0) {
-    return cursor
-  }
-
-  invariant(elapsed > 0)
-
-  let position = new Vec2(cursor.position)
-  let point = cursor.point
-
-  for (let i = 0; i < path.length && elapsed > 0; i++) {
-    const part = path.at(i)
-    invariant(part)
-
-    if (elapsed < part.t) {
-      position = part.a.add(part.v.mul(elapsed))
-      elapsed = 0
-    } else {
-      position = part.b
-      elapsed -= part.t
-    }
-
-    point = part.point
-  }
-
-  return { position, point }
-}
-
-function useMoveCursor(
-  setCursor: React.Dispatch<React.SetStateAction<Cursor>>,
-  path: Path,
-  debug: boolean,
-): void {
-  const lastStep = useRef<number | null>(null)
-  useEffect(() => {
-    if (debug) {
-      lastStep.current = null
-      return
-    }
-    if (path.length === 0) {
-      lastStep.current = null
-      return
-    }
-    if (lastStep.current === null) {
-      lastStep.current = self.performance.now()
-    }
-    let handle: number
-    function step() {
-      const now = self.performance.now()
-      invariant(lastStep.current !== null)
-      const elapsed = (now - lastStep.current) / 1000
-      lastStep.current = now
-      setCursor((prev) => move(prev, path, elapsed))
-      handle = self.requestAnimationFrame(step)
-    }
-    handle = self.requestAnimationFrame(step)
-    return () => {
-      self.cancelAnimationFrame(handle)
-    }
-  }, [path, debug])
-}
 
 const INITIAL_DEBUG = (() => {
   const value = localStorage.getItem('debug')
@@ -215,7 +144,6 @@ export function App() {
   const [cursor, setCursor] = useCursor()
   const player = usePlayer(cursor)
   const path = usePath(cursor, velocity, world)
-  useMoveCursor(setCursor, path, debug)
   const camera = useCamera(player)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
@@ -238,6 +166,13 @@ export function App() {
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={(ev) => {
+        const last = path.at(-1)
+        if (last) {
+          setCursor(() => ({
+            position: new Vec2(last.point).add(0.5),
+            point: last.point,
+          }))
+        }
         setDrag((prev) => {
           if (prev?.pointerId === ev.pointerId) {
             return null
