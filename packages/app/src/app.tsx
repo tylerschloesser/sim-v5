@@ -144,7 +144,7 @@ export function App() {
   const [cursor, setCursor] = useCursor()
   const player = usePlayer(cursor)
   const path = usePath(cursor, velocity, world)
-  const camera = useCamera(player)
+  const camera = useCamera(player, path)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
 
