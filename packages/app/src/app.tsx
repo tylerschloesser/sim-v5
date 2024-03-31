@@ -174,7 +174,7 @@ export function App() {
         const last = path.at(-1)
         if (last) {
           setCursor(() => ({
-            position: new Vec2(last.point).add(0.5),
+            position: last.b,
             point: last.point,
           }))
         }
