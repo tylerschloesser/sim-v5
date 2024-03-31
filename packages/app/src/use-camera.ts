@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Player } from './types.js'
+import { Cursor } from './types.js'
 import { Vec2 } from './vec2.js'
 
-export function useCamera(player: Player): Vec2 {
-  const [camera, setCamera] = useState(player.position)
+export function useCamera(cursor: Cursor): Vec2 {
+  const [camera, setCamera] = useState(cursor.position)
   useEffect(() => {
     let handle: number | null
     let lastStep = self.performance.now()
@@ -12,10 +12,10 @@ export function useCamera(player: Player): Vec2 {
       const elapsed = (now - lastStep) / 1000
       lastStep = now
       setCamera((prev) => {
-        const d = player.position.sub(prev)
+        const d = cursor.position.sub(prev)
         if (d.len() < 1e-3) {
           handle = null
-          return player.position
+          return cursor.position
         }
         handle = self.requestAnimationFrame(step)
 
@@ -29,7 +29,7 @@ export function useCamera(player: Player): Vec2 {
         self.cancelAnimationFrame(handle)
       }
     }
-  }, [player.position])
+  }, [cursor.position])
 
   return camera
 }

@@ -23,7 +23,7 @@ import {
   CellType,
   Drag,
   Path,
-  Player,
+  Cursor,
   Point,
   World,
 } from './types.js'
@@ -37,18 +37,18 @@ import { getCellColor, initWorld } from './world.js'
 type Action = 'clear-stone'
 
 function move(
-  player: Player,
+  cursor: Cursor,
   path: Path,
   elapsed: number,
-): Player {
+): Cursor {
   if (!ALLOW_MOVE || path.length === 0 || elapsed === 0) {
-    return player
+    return cursor
   }
 
   invariant(elapsed > 0)
 
-  let position = new Vec2(player.position)
-  let point = player.point
+  let position = new Vec2(cursor.position)
+  let point = cursor.point
 
   for (let i = 0; i < path.length && elapsed > 0; i++) {
     const part = path.at(i)
@@ -68,8 +68,8 @@ function move(
   return { position, point }
 }
 
-function useMovePlayer(
-  setPlayer: React.Dispatch<React.SetStateAction<Player>>,
+function useMoveCursor(
+  setCursor: React.Dispatch<React.SetStateAction<Cursor>>,
   path: Path,
   debug: boolean,
 ): void {
@@ -92,7 +92,7 @@ function useMovePlayer(
       invariant(lastStep.current !== null)
       const elapsed = (now - lastStep.current) / 1000
       lastStep.current = now
-      setPlayer((prev) => move(prev, path, elapsed))
+      setCursor((prev) => move(prev, path, elapsed))
       handle = self.requestAnimationFrame(step)
     }
     handle = self.requestAnimationFrame(step)
@@ -135,8 +135,8 @@ function useDebug() {
   return debug
 }
 
-const INITIAL_PLAYER = (() => {
-  const value = localStorage.getItem('player')
+const INITIAL_CURSOR = (() => {
+  const value = localStorage.getItem('cursor')
   if (value) {
     const { position, point } = z
       .strictObject({
@@ -161,16 +161,16 @@ const INITIAL_PLAYER = (() => {
   }
 })()
 
-function usePlayer(): [
-  Player,
-  React.Dispatch<React.SetStateAction<Player>>,
+function useCursor(): [
+  Cursor,
+  React.Dispatch<React.SetStateAction<Cursor>>,
 ] {
-  const [player, setPlayer] =
-    useState<Player>(INITIAL_PLAYER)
+  const [cursor, setCursor] =
+    useState<Cursor>(INITIAL_CURSOR)
   useEffect(() => {
-    localStorage.setItem('player', JSON.stringify(player))
-  }, [player])
-  return [player, setPlayer]
+    localStorage.setItem('cursor', JSON.stringify(cursor))
+  }, [cursor])
+  return [cursor, setCursor]
 }
 
 const INITIAL_WORLD = (() => {
@@ -204,11 +204,11 @@ export function App() {
   const [world, setWorld] = useWorld()
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
-  const [player, setPlayer] = usePlayer()
-  const path = usePath(player, velocity, world)
+  const [cursor, setCursor] = useCursor()
+  const path = usePath(cursor, velocity, world)
   const [action, setAction] = useState<Action | null>(null)
-  useMovePlayer(setPlayer, path, debug)
-  const camera = useCamera(player)
+  useMoveCursor(setCursor, path, debug)
+  const camera = useCamera(cursor)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
@@ -243,15 +243,15 @@ export function App() {
             camera={camera}
             scale={scale}
             world={world}
-            player={player}
+            cursor={cursor}
             action={action}
           />
-          <RenderPlayer
+          <RenderCursor
             viewport={viewport}
             camera={camera}
             scale={scale}
             world={world}
-            player={player}
+            cursor={cursor}
             path={path}
           />
           <RenderDrag drag={drag} viewport={viewport} />
@@ -261,7 +261,7 @@ export function App() {
           />
           <RenderActionButton
             viewport={viewport}
-            player={player}
+            cursor={cursor}
             world={world}
             setWorld={setWorld}
             action={action}
@@ -303,7 +303,7 @@ interface RenderActionProps {
   viewport: Vec2
   camera: Vec2
   scale: number
-  player: Player
+  cursor: Cursor
   world: World
   action: Action | null
 }
@@ -312,14 +312,14 @@ function RenderAction({
   viewport,
   camera,
   scale,
-  player,
+  cursor,
   world,
   action,
 }: RenderActionProps) {
   const d = 5
   const rng = useMemo(() => new Prando(0), [])
 
-  const cellId = toCellId(player.point)
+  const cellId = toCellId(cursor.point)
   const cell = world.cells[cellId]
   invariant(cell)
 
@@ -371,7 +371,7 @@ function RenderAction({
     >
       {action && (
         <g
-          transform={`translate(${player.point.x * scale} ${player.point.y * scale})`}
+          transform={`translate(${cursor.point.x * scale} ${cursor.point.y * scale})`}
         >
           <g
             ref={ref}
@@ -403,7 +403,7 @@ function RenderAction({
 
 interface RenderActionButtonProps {
   viewport: Vec2
-  player: Player
+  cursor: Cursor
   world: World
   setWorld: Updater<World>
   action: Action | null
@@ -414,7 +414,7 @@ interface RenderActionButtonProps {
 
 function RenderActionButton({
   viewport,
-  player,
+  cursor,
   world,
   action,
   setAction,
@@ -423,7 +423,7 @@ function RenderActionButton({
 
   const r = vmin / 8
 
-  const cellId = toCellId(player.point)
+  const cellId = toCellId(cursor.point)
   const cell = world.cells[cellId]
   invariant(cell)
 
@@ -898,24 +898,24 @@ function useHandlers(
   }, [])
 }
 
-interface RenderPlayerProps {
+interface RenderCursorProps {
   viewport: Vec2
   camera: Vec2
   scale: number
-  player: Player
+  cursor: Cursor
   path: Path
   world: World
 }
 
-function RenderPlayer({
+function RenderCursor({
   viewport,
   camera,
   scale,
-  player,
+  cursor,
   path,
   world,
-}: RenderPlayerProps) {
-  const cellId = toCellId(player.point)
+}: RenderCursorProps) {
+  const cellId = toCellId(cursor.point)
   const cell = world.cells[cellId]
   invariant(cell)
   const opacity =
@@ -933,7 +933,7 @@ function RenderPlayer({
       })}
     >
       <circle
-        transform={svgTranslate(player.position.mul(scale))}
+        transform={svgTranslate(cursor.position.mul(scale))}
         x={0}
         y={0}
         r={scale / 2}
