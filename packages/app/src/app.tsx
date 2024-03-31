@@ -11,7 +11,12 @@ import invariant from 'tiny-invariant'
 import { Updater, useImmer } from 'use-immer'
 import * as z from 'zod'
 import styles from './app.module.scss'
-import { SHOW_GRID, SHOW_PATH, getScale } from './const.js'
+import {
+  SHOW_GRID,
+  SHOW_PATH,
+  SHOW_PATH_TARGET,
+  getScale,
+} from './const.js'
 import { radiansToDegrees } from './math.js'
 import {
   CellType,
@@ -222,6 +227,7 @@ export function App() {
             />
             <RenderPlayer scale={scale} player={player} />
             <RenderPath scale={scale} path={path} />
+            <RenderPathTarget scale={scale} path={path} />
           </g>
 
           <RenderDrag drag={drag} viewport={viewport} />
@@ -862,6 +868,33 @@ function RenderPath({ scale, path }: RenderPathProps) {
             height={scale - 2}
           />
         ))}
+      </g>
+    )
+  )
+}
+
+interface RenderPathTargetProps {
+  scale: number
+  path: Path
+}
+
+function RenderPathTarget({
+  scale,
+  path,
+}: RenderPathProps) {
+  const last = path.at(-1)
+  return (
+    SHOW_PATH_TARGET &&
+    last && (
+      <g stroke="red" fill="transparent">
+        <SmoothRect
+          scale={scale}
+          translate={last.point.mul(scale)}
+          x={0}
+          y={0}
+          height={scale}
+          width={scale}
+        />
       </g>
     )
   )

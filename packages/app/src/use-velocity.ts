@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import invariant from 'tiny-invariant'
-import { ENABLE_DECELERATION, MAX_SPEED } from './const.js'
+import { useMemo } from 'react'
+import { MAX_SPEED } from './const.js'
 import { Drag } from './types.js'
 import { Vec2 } from './vec2.js'
 
@@ -34,60 +33,5 @@ export function useVelocity(
     return dir.norm().mul(speed)
   }, [drag, scale])
 
-  const [fromRelease, setFromRelease] =
-    useState<Vec2 | null>(null)
-
-  const prevFromDrag = useRef<Vec2 | null>(fromDrag)
-
-  useEffect(() => {
-    if (fromDrag) {
-      setFromRelease(null)
-    }
-  }, [fromDrag])
-
-  useEffect(() => {
-    if (ENABLE_DECELERATION === false) {
-      return
-    }
-    if (fromDrag || !prevFromDrag.current) {
-      return
-    }
-
-    invariant(prevFromDrag.current)
-    setFromRelease(prevFromDrag.current)
-
-    let handle: number | null
-
-    const startVelocity = prevFromDrag.current
-    const startRelease = self.performance.now()
-
-    const duration = 500
-
-    function step() {
-      const now = self.performance.now()
-      const dt = now - startRelease
-      invariant(dt >= 0)
-      if (dt >= duration) {
-        setFromRelease(null)
-        handle = null
-      } else {
-        const speed =
-          startVelocity.len() * (1 - (dt / duration) ** 2)
-        setFromRelease(startVelocity.norm().mul(speed))
-        handle = self.requestAnimationFrame(step)
-      }
-    }
-    handle = self.requestAnimationFrame(step)
-    return () => {
-      if (handle) {
-        self.cancelAnimationFrame(handle)
-      }
-    }
-  }, [fromDrag])
-
-  useEffect(() => {
-    prevFromDrag.current = fromDrag
-  }, [fromDrag])
-
-  return fromDrag ?? fromRelease ?? new Vec2(0, 0)
+  return fromDrag ?? new Vec2(0, 0)
 }

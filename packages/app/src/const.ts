@@ -1,11 +1,10 @@
 import { Vec2 } from './vec2.js'
 
 export const SHOW_GRID: boolean = false
-export const SHOW_PATH: boolean = true
+export const SHOW_PATH: boolean = false
+export const SHOW_PATH_TARGET: boolean = true
 
-export const ENABLE_DECELERATION: boolean = false
-
-export const MAX_SPEED = 20
+export const MAX_SPEED = 10
 
 // How far ahead (in seconds) to simulate the path.
 // The time step cannot be greater than this.
