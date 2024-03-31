@@ -4,7 +4,7 @@ export const SHOW_GRID: boolean = false
 export const SHOW_PATH: boolean = false
 export const SHOW_PATH_TARGET: boolean = true
 
-export const MAX_SPEED = 10
+export const MAX_SPEED = Infinity
 
 // How far ahead (in seconds) to simulate the path.
 // The time step cannot be greater than this.
@@ -17,6 +17,6 @@ export function getScale(viewport: Vec2 | null) {
   return Math.min(viewport.x, viewport.y) / 8
 }
 
-export function smooth(k: number): number {
-  return (k + 1) ** 2.5 - 1
+export function smooth(k: number, n = 2.5): number {
+  return (k + 1) ** n - 1
 }

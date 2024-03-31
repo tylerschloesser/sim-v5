@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MAX_SPEED } from './const.js'
+import { MAX_SPEED, smooth } from './const.js'
 import { Drag } from './types.js'
 import { Vec2 } from './vec2.js'
 
@@ -28,7 +28,7 @@ export function useVelocity(
     dir.y *= -1
 
     const speed = Math.min(
-      (dir.div(scale).len() + 1) ** 1.75 - 1,
+      smooth(dir.div(scale).len(), 1.5),
       MAX_SPEED,
     )
 
