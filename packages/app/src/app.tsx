@@ -29,6 +29,7 @@ import {
 } from './types.js'
 import { useCamera } from './use-camera.js'
 import { usePath } from './use-path.js'
+import { usePlayer } from './use-player.js'
 import { useVelocity } from './use-velocity.js'
 import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
@@ -191,10 +192,6 @@ function useWorld(): [World, Updater<World>] {
 
 function useScale(viewport: Vec2 | null): number | null {
   return useMemo(() => getScale(viewport), [viewport])
-}
-
-function usePlayer(cursor: Cursor): Vec2 {
-  return cursor.position
 }
 
 export function App() {
