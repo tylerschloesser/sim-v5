@@ -3,13 +3,15 @@ import { MAX_SPEED } from './const.js'
 import { Drag } from './types.js'
 import { Vec2 } from './vec2.js'
 
+const ZERO = new Vec2(0, 0)
+
 export function useVelocity(
   scale: number | null,
   drag: Drag | null,
 ): Vec2 {
-  const fromDrag = useMemo<Vec2 | null>(() => {
+  return useMemo<Vec2>(() => {
     if (scale === null) {
-      return null
+      return ZERO
     }
     const start = drag?.events.at(0)?.position
     let end = drag?.events.at(-1)?.position
@@ -19,7 +21,7 @@ export function useVelocity(
     const dir = start && end ? end.sub(start) : null
 
     if (dir === null) {
-      return null
+      return ZERO
     }
 
     // invert y direction
@@ -32,6 +34,4 @@ export function useVelocity(
 
     return dir.norm().mul(speed)
   }, [drag, scale])
-
-  return fromDrag ?? new Vec2(0, 0)
 }
