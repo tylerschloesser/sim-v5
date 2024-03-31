@@ -225,9 +225,9 @@ export function App() {
               cursor={cursor}
               action={action}
             />
-            <RenderPlayer scale={scale} player={player} />
             <RenderPath scale={scale} path={path} />
             <RenderPathTarget scale={scale} path={path} />
+            <RenderPlayer scale={scale} player={player} />
           </g>
 
           <RenderDrag drag={drag} viewport={viewport} />
