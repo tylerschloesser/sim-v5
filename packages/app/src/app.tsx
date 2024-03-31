@@ -221,11 +221,7 @@ export function App() {
               action={action}
             />
             <RenderPlayer scale={scale} player={player} />
-            <RenderCursor
-              scale={scale}
-              cursor={cursor}
-              path={path}
-            />
+            <RenderPath scale={scale} path={path} />
           </g>
 
           <RenderDrag drag={drag} viewport={viewport} />
@@ -836,53 +832,37 @@ function RenderPlayer({
   )
 }
 
-interface RenderCursorProps {
+interface RenderPathProps {
   scale: number
-  cursor: Cursor
   path: Path
 }
 
-function RenderCursor({
-  scale,
-  cursor,
-  path,
-}: RenderCursorProps) {
+function RenderPath({ scale, path }: RenderPathProps) {
   return (
-    <g>
-      <g stroke="red" fill="transparent">
-        <SmoothRect
-          scale={scale}
-          translate={cursor.point.mul(scale)}
-          x={0}
-          y={0}
-          width={scale}
-          height={scale}
-        />
+    SHOW_PATH &&
+    path.length && (
+      <g fill="transparent">
+        {path.map(({ a, b }, i) => (
+          <line
+            stroke={i % 2 === 0 ? 'red' : 'cyan'}
+            key={i}
+            x1={a.x * scale}
+            y1={a.y * scale}
+            x2={b.x * scale}
+            y2={b.y * scale}
+          />
+        ))}
+        {path.map(({ point }, i) => (
+          <rect
+            stroke={i % 2 === 0 ? 'red' : 'cyan'}
+            key={i}
+            x={point.x * scale + 1}
+            y={point.y * scale + 1}
+            width={scale - 2}
+            height={scale - 2}
+          />
+        ))}
       </g>
-      {SHOW_PATH && path.length && (
-        <g fill="transparent">
-          {path.map(({ a, b }, i) => (
-            <line
-              stroke={i % 2 === 0 ? 'red' : 'cyan'}
-              key={i}
-              x1={a.x * scale}
-              y1={a.y * scale}
-              x2={b.x * scale}
-              y2={b.y * scale}
-            />
-          ))}
-          {path.map(({ point }, i) => (
-            <rect
-              stroke={i % 2 === 0 ? 'red' : 'cyan'}
-              key={i}
-              x={point.x * scale + 1}
-              y={point.y * scale + 1}
-              width={scale - 2}
-              height={scale - 2}
-            />
-          ))}
-        </g>
-      )}
-    </g>
+    )
   )
 }
