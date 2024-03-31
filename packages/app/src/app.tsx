@@ -193,6 +193,10 @@ function useScale(viewport: Vec2 | null): number | null {
   return useMemo(() => getScale(viewport), [viewport])
 }
 
+function usePlayer(cursor: Cursor): Vec2 {
+  return cursor.position
+}
+
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
@@ -205,10 +209,11 @@ export function App() {
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
   const [cursor, setCursor] = useCursor()
+  const player = usePlayer(cursor)
   const path = usePath(cursor, velocity, world)
   const [action, setAction] = useState<Action | null>(null)
   useMoveCursor(setCursor, path, debug)
-  const camera = useCamera(cursor)
+  const camera = useCamera(player)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
   const handlers = useHandlers(setDrag)
