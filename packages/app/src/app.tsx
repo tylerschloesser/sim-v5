@@ -759,7 +759,7 @@ function RenderDrag({ drag, viewport }: RenderDragProps) {
     end = undefined
   }
   const vmin = Math.min(viewport.x, viewport.y)
-  const r = vmin / 8
+  const r = vmin / 20
   if (!start) return null
   return (
     <>
