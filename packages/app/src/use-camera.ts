@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { smooth } from './const.js'
 import { Cursor, Path } from './types.js'
 import { Vec2 } from './vec2.js'
 
@@ -38,8 +39,9 @@ export function useCamera(
         if (d.len() < 1e-3) {
           return target.current
         }
-        const speed = (d.len() + 1) ** 2.5 - 1
-        return prev.add(d.norm().mul(speed * elapsed))
+        return prev.add(
+          d.norm().mul(smooth(d.len()) * elapsed),
+        )
       })
       handle = self.requestAnimationFrame(step)
     }

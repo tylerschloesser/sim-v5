@@ -16,3 +16,7 @@ export function getScale(viewport: Vec2 | null) {
   }
   return Math.min(viewport.x, viewport.y) / 8
 }
+
+export function smooth(k: number): number {
+  return (k + 1) ** 2.5 - 1
+}

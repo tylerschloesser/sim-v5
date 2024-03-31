@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { smooth } from './const.js'
 import { Cursor } from './types.js'
 import { Vec2 } from './vec2.js'
 
@@ -7,7 +8,7 @@ export function usePlayer(cursor: Cursor): Vec2 {
 
   const target = useRef(cursor.position)
   useEffect(() => {
-    target.current = cursor.position
+    target.current = cursor.point.add(0.5)
   }, [cursor])
 
   useEffect(() => {
@@ -26,8 +27,9 @@ export function usePlayer(cursor: Cursor): Vec2 {
         if (d.len() < 1e-3) {
           return target.current
         }
-        const speed = (d.len() + 1) ** 2.5 - 1
-        return prev.add(d.norm().mul(speed * elapsed))
+        return prev.add(
+          d.norm().mul(smooth(d.len()) * elapsed),
+        )
       })
 
       handle = self.requestAnimationFrame(step)
