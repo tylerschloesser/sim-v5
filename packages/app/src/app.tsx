@@ -20,9 +20,9 @@ import {
 import { radiansToDegrees } from './math.js'
 import {
   CellType,
+  Cursor,
   Drag,
   Path,
-  Cursor,
   Point,
   World,
 } from './types.js'
@@ -193,6 +193,14 @@ function useScale(viewport: Vec2 | null): number | null {
   return useMemo(() => getScale(viewport), [viewport])
 }
 
+function useAction(): [
+  Action | null,
+  React.Dispatch<React.SetStateAction<Action | null>>,
+] {
+  const [action, setAction] = useState<Action | null>(null)
+  return [action, setAction]
+}
+
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
@@ -207,12 +215,15 @@ export function App() {
   const [cursor, setCursor] = useCursor()
   const player = usePlayer(cursor)
   const path = usePath(cursor, velocity, world)
-  const [action, setAction] = useState<Action | null>(null)
   useMoveCursor(setCursor, path, debug)
   const camera = useCamera(player)
   useResize(svg, setViewport)
   usePreventDefaults(svg)
-  const handlers = useHandlers(setDrag)
+
+  const onPointerDown = useOnPointerDown(setDrag)
+  const onPointerMove = useOnPointerMove(setDrag)
+
+  const [action, setAction] = useAction()
 
   const viewBox = viewport
     ? `0 0 ${viewport.x} ${viewport.y}`
@@ -224,7 +235,29 @@ export function App() {
       viewBox={viewBox}
       className={styles.app}
       data-scale={scale}
-      {...handlers}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={(ev) => {
+        setDrag((prev) => {
+          if (prev?.pointerId === ev.pointerId) {
+            return null
+          }
+        })
+      }}
+      onPointerLeave={(ev) => {
+        setDrag((prev) => {
+          if (prev?.pointerId === ev.pointerId) {
+            return null
+          }
+        })
+      }}
+      onPointerCancel={(ev) => {
+        setDrag((prev) => {
+          if (prev?.pointerId === ev.pointerId) {
+            return null
+          }
+        })
+      }}
     >
       {viewport && scale && (
         <>
@@ -424,6 +457,7 @@ function RenderActionButton({
   world,
   action,
   setAction,
+  setWorld,
 }: RenderActionButtonProps) {
   const vmin = Math.min(viewport.x, viewport.y)
 
@@ -461,24 +495,18 @@ function RenderActionButton({
     }
   }, [disabled])
 
-  const handler = useRef<number | null>(null)
+  const timeout = useRef<number | null>(null)
   useEffect(() => {
-    if (action) {
-      // eslint-disable-next-line no-inner-declarations
-      function step() {
-        console.log('TODO do something')
-        handler.current = self.requestAnimationFrame(step)
-      }
-      invariant(handler.current === null)
-      handler.current = self.requestAnimationFrame(step)
-      return () => {
-        if (handler.current) {
-          self.cancelAnimationFrame(handler.current)
-          handler.current = null
-        }
-      }
+    if (!action) return
+    timeout.current = self.setTimeout(() => {
+      setWorld(clearStone(cursor.point))
+      timeout.current = null
+    }, 1000)
+    return () => {
+      self.clearTimeout(timeout.current ?? undefined)
+      timeout.current = null
     }
-  }, [action])
+  }, [action, cursor.point])
 
   return (
     <circle
@@ -843,64 +871,41 @@ function RenderDrag({ drag, viewport }: RenderDragProps) {
   )
 }
 
-function useHandlers(
-  setDrag: Updater<Drag | null>,
-): Required<
-  Pick<
-    React.DOMAttributes<Element>,
-    | 'onPointerUp'
-    | 'onPointerDown'
-    | 'onPointerMove'
-    | 'onPointerLeave'
-    | 'onPointerCancel'
-  >
-> {
-  return useMemo(() => {
-    const clearDrag = (ev: React.PointerEvent) => {
-      setDrag((drag) => {
-        if (ev.pointerId === drag?.pointerId) {
-          return null
+function useOnPointerDown(setDrag: Updater<Drag | null>) {
+  return useCallback<
+    Required<React.DOMAttributes<Element>>['onPointerUp']
+  >((ev) => {
+    setDrag((prev) => {
+      if (prev === null) {
+        const next: Drag = {
+          pointerId: ev.pointerId,
+          events: [
+            {
+              time: ev.timeStamp,
+              position: new Vec2(ev.clientX, ev.clientY),
+            },
+          ],
         }
+        return next
+      }
+      invariant(prev.pointerId !== ev.pointerId)
+    })
+  }, [])
+}
+
+function useOnPointerMove(setDrag: Updater<Drag | null>) {
+  return useCallback<
+    Required<React.DOMAttributes<Element>>['onPointerMove']
+  >((ev) => {
+    setDrag((prev) => {
+      if (!prev || prev.pointerId !== ev.pointerId) {
+        return
+      }
+      prev.events.push({
+        time: ev.timeStamp,
+        position: new Vec2(ev.clientX, ev.clientY),
       })
-    }
-    return {
-      onPointerDown: (ev) => {
-        setDrag((prev) => {
-          if (prev === null) {
-            const next: Drag = {
-              pointerId: ev.pointerId,
-              events: [
-                {
-                  time: ev.timeStamp,
-                  position: new Vec2(
-                    ev.clientX,
-                    ev.clientY,
-                  ),
-                },
-              ],
-            }
-            return next
-          }
-          invariant(prev.pointerId !== ev.pointerId)
-        })
-      },
-
-      onPointerMove: (ev) => {
-        setDrag((prev) => {
-          if (!prev || prev.pointerId !== ev.pointerId) {
-            return
-          }
-          prev.events.push({
-            time: ev.timeStamp,
-            position: new Vec2(ev.clientX, ev.clientY),
-          })
-        })
-      },
-
-      onPointerUp: clearDrag,
-      onPointerLeave: clearDrag,
-      onPointerCancel: clearDrag,
-    }
+    })
   }, [])
 }
 
