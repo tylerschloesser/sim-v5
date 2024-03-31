@@ -889,9 +889,10 @@ function RenderCursor({
   path,
 }: RenderCursorProps) {
   const { target, stroke } = useMemo(() => {
-    const stroke = 'red'
     const last = path.at(-1)
     const target = last ? last.point : cursor.point
+    const opacity = last ? 1 : 0.5
+    const stroke = `hsla(0, 100%, 50%, ${opacity})`
     return { target, stroke }
   }, [cursor, path])
 

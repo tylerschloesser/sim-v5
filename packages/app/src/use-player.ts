@@ -4,7 +4,9 @@ import { Cursor } from './types.js'
 import { Vec2 } from './vec2.js'
 
 export function usePlayer(cursor: Cursor): Vec2 {
-  const [player, setPlayer] = useState(cursor.position)
+  const [player, setPlayer] = useState(
+    cursor.point.add(0.5),
+  )
 
   const target = useRef(cursor.position)
   useEffect(() => {
