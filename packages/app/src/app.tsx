@@ -12,9 +12,9 @@ import { Updater, useImmer } from 'use-immer'
 import * as z from 'zod'
 import styles from './app.module.scss'
 import {
+  SHOW_CURSOR,
   SHOW_GRID,
   SHOW_PATH,
-  SHOW_PATH_TARGET,
   getScale,
 } from './const.js'
 import { radiansToDegrees } from './math.js'
@@ -226,7 +226,11 @@ export function App() {
               action={action}
             />
             <RenderPath scale={scale} path={path} />
-            <RenderPathTarget scale={scale} path={path} />
+            <RenderCursor
+              scale={scale}
+              cursor={cursor}
+              path={path}
+            />
             <RenderPlayer scale={scale} player={player} />
           </g>
 
@@ -873,23 +877,30 @@ function RenderPath({ scale, path }: RenderPathProps) {
   )
 }
 
-interface RenderPathTargetProps {
+interface RenderCursorProps {
   scale: number
+  cursor: Cursor
   path: Path
 }
 
-function RenderPathTarget({
+function RenderCursor({
   scale,
+  cursor,
   path,
-}: RenderPathProps) {
-  const last = path.at(-1)
+}: RenderCursorProps) {
+  const { target, stroke } = useMemo(() => {
+    const stroke = 'red'
+    const last = path.at(-1)
+    const target = last ? last.point : cursor.point
+    return { target, stroke }
+  }, [cursor, path])
+
   return (
-    SHOW_PATH_TARGET &&
-    last && (
-      <g stroke="red" fill="transparent">
+    SHOW_CURSOR && (
+      <g stroke={stroke} fill="transparent">
         <SmoothRect
           scale={scale}
-          translate={last.point.mul(scale)}
+          translate={target.mul(scale)}
           x={0}
           y={0}
           height={scale}
