@@ -201,33 +201,33 @@ export function App() {
             camera={camera}
             scale={scale}
           />
-          <RenderCells
-            viewport={viewport}
-            camera={camera}
-            scale={scale}
-            world={world}
-          />
-          <RenderAction
-            viewport={viewport}
-            camera={camera}
-            scale={scale}
-            world={world}
-            cursor={cursor}
-            action={action}
-          />
-          <RenderPlayer
-            viewport={viewport}
-            camera={camera}
-            scale={scale}
-            player={player}
-          />
-          <RenderCursor
-            viewport={viewport}
-            camera={camera}
-            scale={scale}
-            cursor={cursor}
-            path={path}
-          />
+          <g
+            transform={svgTransform({
+              translate: viewport
+                .div(2)
+                .sub(
+                  new Vec2(camera.x, camera.y * -1).mul(
+                    scale,
+                  ),
+                ),
+              scale: new Vec2(1, -1),
+            })}
+          >
+            <RenderCells scale={scale} world={world} />
+            <RenderAction
+              scale={scale}
+              world={world}
+              cursor={cursor}
+              action={action}
+            />
+            <RenderPlayer scale={scale} player={player} />
+            <RenderCursor
+              scale={scale}
+              cursor={cursor}
+              path={path}
+            />
+          </g>
+
           <RenderDrag drag={drag} viewport={viewport} />
           <RenderVelocity
             velocity={velocity}
@@ -274,8 +274,6 @@ function clearStone(point: Point) {
 }
 
 interface RenderActionProps {
-  viewport: Vec2
-  camera: Vec2
   scale: number
   cursor: Cursor
   world: World
@@ -283,8 +281,6 @@ interface RenderActionProps {
 }
 
 function RenderAction({
-  viewport,
-  camera,
   scale,
   cursor,
   world,
@@ -332,45 +328,36 @@ function RenderAction({
     }
   }, [action])
 
+  if (!action) {
+    return null
+  }
+
   return (
     <g
-      transform={svgTransform({
-        translate: viewport
-          .div(2)
-          .sub(
-            new Vec2(camera.x, camera.y * -1).mul(scale),
-          ),
-        scale: new Vec2(1, -1),
-      })}
+      transform={`translate(${cursor.point.x * scale} ${cursor.point.y * scale})`}
     >
-      {action && (
-        <g
-          transform={`translate(${cursor.point.x * scale} ${cursor.point.y * scale})`}
-        >
-          <g
-            ref={ref}
-            style={{
-              transformOrigin: `${scale / 2}px ${scale / 2}px`,
-            }}
-          >
-            <rect
-              width={scale}
-              height={scale}
-              fill={cell.color}
-            />
-            {times(d ** 2).map((i) => (
-              <rect
-                key={i}
-                x={Math.floor(i / d) * (scale / d)}
-                y={(i % d) * (scale / d)}
-                width={scale / d}
-                height={scale / d}
-                fill={pixels[i]}
-              />
-            ))}
-          </g>
-        </g>
-      )}
+      <g
+        ref={ref}
+        style={{
+          transformOrigin: `${scale / 2}px ${scale / 2}px`,
+        }}
+      >
+        <rect
+          width={scale}
+          height={scale}
+          fill={cell.color}
+        />
+        {times(d ** 2).map((i) => (
+          <rect
+            key={i}
+            x={Math.floor(i / d) * (scale / d)}
+            y={(i % d) * (scale / d)}
+            width={scale / d}
+            height={scale / d}
+            fill={pixels[i]}
+          />
+        ))}
+      </g>
     </g>
   )
 }
@@ -612,28 +599,12 @@ function RenderGrid({
 }
 
 interface RenderCellsProps {
-  viewport: Vec2
-  camera: Vec2
   scale: number
   world: World
 }
-function RenderCells({
-  viewport,
-  camera,
-  scale,
-  world,
-}: RenderCellsProps) {
+function RenderCells({ scale, world }: RenderCellsProps) {
   return (
-    <g
-      transform={svgTransform({
-        translate: viewport
-          .div(2)
-          .sub(
-            new Vec2(camera.x, camera.y * -1).mul(scale),
-          ),
-        scale: new Vec2(1, -1),
-      })}
-    >
+    <g>
       {Array.from(iterateCells(world)).map(
         ({ id, x, y, color }) => (
           <rect
@@ -845,28 +816,15 @@ function useOnPointerMove(setDrag: Updater<Drag | null>) {
 }
 
 interface RenderPlayerProps {
-  viewport: Vec2
-  camera: Vec2
   scale: number
   player: Vec2
 }
 function RenderPlayer({
-  viewport,
-  camera,
   scale,
   player,
 }: RenderPlayerProps) {
   return (
-    <g
-      transform={svgTransform({
-        translate: viewport
-          .div(2)
-          .sub(
-            new Vec2(camera.x, camera.y * -1).mul(scale),
-          ),
-        scale: new Vec2(1, -1),
-      })}
-    >
+    <g>
       <circle
         transform={svgTranslate(player.mul(scale))}
         x={0}
@@ -879,31 +837,18 @@ function RenderPlayer({
 }
 
 interface RenderCursorProps {
-  viewport: Vec2
-  camera: Vec2
   scale: number
   cursor: Cursor
   path: Path
 }
 
 function RenderCursor({
-  viewport,
-  camera,
   scale,
   cursor,
   path,
 }: RenderCursorProps) {
   return (
-    <g
-      transform={svgTransform({
-        translate: viewport
-          .div(2)
-          .sub(
-            new Vec2(camera.x, camera.y * -1).mul(scale),
-          ),
-        scale: new Vec2(1, -1),
-      })}
-    >
+    <g>
       <g stroke="red" fill="transparent">
         <SmoothRect
           scale={scale}
