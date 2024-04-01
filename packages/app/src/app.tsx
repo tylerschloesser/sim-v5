@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useEffect,
   useMemo,
@@ -27,6 +27,7 @@ import { useCamera } from './use-camera.js'
 import { usePath } from './use-path.js'
 import { usePlayer } from './use-player.js'
 import { useVelocity } from './use-velocity.js'
+import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
 
@@ -118,6 +119,21 @@ function useViewBox(
   )
 }
 
+function useAction(path: Path): string | null {
+  if (path.length !== 1) {
+    return null
+  }
+
+  const item = path.at(0)
+  invariant(item)
+
+  if (item.blockedBy && item.t > 0.25) {
+    return toCellId(item.blockedBy)
+  }
+
+  return null
+}
+
 export function App() {
   const svg = useRef<SVGSVGElement>(null)
   const viewport = useViewport(svg)
@@ -137,6 +153,11 @@ export function App() {
     setCursor,
     path,
   )
+
+  const action = useAction(path)
+  useEffect(() => {
+    console.log('action', action)
+  }, [action])
 
   usePreventDefaults(svg)
 
@@ -626,11 +647,10 @@ function RenderPath({ scale, path }: RenderPathProps) {
           />
         ))}
         {path.map(({ point, blockedBy, t }, i) => (
-          <>
+          <React.Fragment key={i}>
             <rect
               stroke={i % 2 === 0 ? 'red' : 'cyan'}
               opacity={0.5}
-              key={i}
               x={point.x * scale + 1}
               y={point.y * scale + 1}
               width={scale - 2}
@@ -644,7 +664,6 @@ function RenderPath({ scale, path }: RenderPathProps) {
               >
                 <rect
                   stroke={'purple'}
-                  key={i}
                   width={scale - 2}
                   height={scale - 2}
                 />
@@ -658,7 +677,7 @@ function RenderPath({ scale, path }: RenderPathProps) {
                 </text>
               </g>
             )}
-          </>
+          </React.Fragment>
         ))}
       </g>
     )
