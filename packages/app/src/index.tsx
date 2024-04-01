@@ -4,8 +4,6 @@ import invariant from 'tiny-invariant'
 import { App } from './app.js'
 import './index.scss'
 
-localStorage.clear()
-
 if (localStorage.getItem('reset') === 'true') {
   console.log('reset')
   localStorage.clear()
