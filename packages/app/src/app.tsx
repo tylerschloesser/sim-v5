@@ -861,6 +861,7 @@ function RenderPath({ scale, path }: RenderPathProps) {
         {path.map(({ point }, i) => (
           <rect
             stroke={i % 2 === 0 ? 'red' : 'cyan'}
+            opacity={0.5}
             key={i}
             x={point.x * scale + 1}
             y={point.y * scale + 1}
