@@ -85,12 +85,32 @@ function useScale(viewport: Vec2 | null): number | null {
   return useMemo(() => getScale(viewport), [viewport])
 }
 
-export function App() {
-  // prettier-ignore
-  const [viewport, setViewport] = useState<Vec2 | null>(null)
+function useViewport(
+  root: React.RefObject<Element>,
+): Vec2 | null {
+  const [viewport, setViewport] = useState<Vec2 | null>(
+    null,
+  )
+  useEffect(() => {
+    invariant(root.current)
+    const ro = new ResizeObserver((entries) => {
+      invariant(entries.length === 1)
+      const { contentRect: rect } = entries.at(0)!
+      setViewport(new Vec2(rect.width, rect.height))
+    })
+    ro.observe(root.current)
+    return () => {
+      ro.disconnect()
+    }
+  }, [])
+  return viewport
+}
 
-  const scale = useScale(viewport)
+export function App() {
   const svg = useRef<SVGSVGElement>(null)
+
+  const viewport = useViewport(svg)
+  const scale = useScale(viewport)
   const [world] = useWorld()
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
@@ -98,7 +118,6 @@ export function App() {
   const path = usePath(cursor, velocity, world)
   const player = usePlayer(cursor, path)
   const camera = useCamera(cursor, path)
-  useResize(svg, setViewport)
   usePreventDefaults(svg)
 
   const onPointerDown = useOnPointerDown(setDrag)
@@ -253,24 +272,6 @@ function* iterateCells(world: World): Generator<{
     const id = key
     yield { id, type, x, y, color }
   }
-}
-
-function useResize(
-  svg: React.RefObject<SVGSVGElement>,
-  setViewport: (viewport: Vec2) => void,
-): void {
-  useEffect(() => {
-    invariant(svg.current)
-    const ro = new ResizeObserver((entries) => {
-      invariant(entries.length === 1)
-      const { contentRect: rect } = entries.at(0)!
-      setViewport(new Vec2(rect.width, rect.height))
-    })
-    ro.observe(svg.current)
-    return () => {
-      ro.disconnect()
-    }
-  }, [])
 }
 
 function usePreventDefaults(
