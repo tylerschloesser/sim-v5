@@ -120,17 +120,10 @@ function useViewBox(
 }
 
 function useAction(path: Path): string | null {
-  if (path.length !== 1) {
-    return null
+  const last = path.at(0)
+  if (last?.blockedBy && last.t > 0.25) {
+    return toCellId(last.blockedBy)
   }
-
-  const item = path.at(0)
-  invariant(item)
-
-  if (item.blockedBy && item.t > 0.25) {
-    return toCellId(item.blockedBy)
-  }
-
   return null
 }
 
