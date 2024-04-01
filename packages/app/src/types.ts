@@ -35,4 +35,5 @@ export type Path = Array<{
   v: Vec2
   t: number
   point: Point
+  blockedBy?: Point
 }>

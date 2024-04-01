@@ -8,6 +8,7 @@ import {
   Cursor,
   World,
   CellType,
+  Point,
 } from './types.js'
 import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
@@ -51,7 +52,11 @@ export function usePath(
 
       let v: Vec2 | null = velocity
 
+      let blockedBy: Point | undefined = undefined
+
       if (isCellBlocked(cell)) {
+        blockedBy = point
+
         if (x % 1 === 0 && y % 1 === 0) {
           //
           // we are in the corner, first attempt to move along the
@@ -193,6 +198,7 @@ export function usePath(
         t,
         v,
         point,
+        blockedBy,
       })
     }
 
