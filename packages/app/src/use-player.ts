@@ -12,8 +12,8 @@ function useTarget(
     if (!last) {
       return cursor.point.add(0.5)
     }
-    const v = last.point.sub(cursor.point)
-    return cursor.point.add(v.div(2)).add(0.5)
+    const v = last.b.sub(cursor.position)
+    return cursor.position.add(v.div(2))
   }, [cursor, path])
   const ref = useRef(target)
   useEffect(() => {

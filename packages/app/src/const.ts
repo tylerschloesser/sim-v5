@@ -1,7 +1,7 @@
 import { Vec2 } from './vec2.js'
 
 export const SHOW_GRID: boolean = false
-export const SHOW_PATH: boolean = false
+export const SHOW_PATH: boolean = true
 export const SHOW_CURSOR: boolean = true
 
 export const MAX_SPEED = Infinity
