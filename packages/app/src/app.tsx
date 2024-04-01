@@ -36,16 +36,15 @@ import { getCellColor, initWorld } from './world.js'
 
 type Action = 'clear-stone'
 
-const INITIAL_DEBUG = (() => {
-  const value = localStorage.getItem('debug')
-  if (value) {
-    return z.boolean().parse(JSON.parse(value))
-  }
-  return false
-})()
-
 function useDebug() {
-  const [debug, setDebug] = useState<boolean>(INITIAL_DEBUG)
+  const initial = useMemo(() => {
+    const value = localStorage.getItem('debug')
+    if (value) {
+      return z.boolean().parse(JSON.parse(value))
+    }
+    return false
+  }, [])
+  const [debug, setDebug] = useState<boolean>(initial)
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
@@ -69,54 +68,51 @@ function useDebug() {
   return debug
 }
 
-const INITIAL_CURSOR = (() => {
-  const value = localStorage.getItem('cursor')
-  if (value) {
-    const { position, point } = z
-      .strictObject({
-        position: z.strictObject({
-          x: z.number(),
-          y: z.number(),
-        }),
-        point: z.strictObject({
-          x: z.number(),
-          y: z.number(),
-        }),
-      })
-      .parse(JSON.parse(value))
-    return {
-      position: new Vec2(position),
-      point: new Vec2(point),
-    }
-  }
-  return {
-    position: new Vec2(0, 0),
-    point: new Vec2(0, 0),
-  }
-})()
-
 function useCursor(): [
   Cursor,
   React.Dispatch<React.SetStateAction<Cursor>>,
 ] {
-  const [cursor, setCursor] =
-    useState<Cursor>(INITIAL_CURSOR)
+  const initial = useMemo(() => {
+    const value = localStorage.getItem('cursor')
+    if (value) {
+      const { position, point } = z
+        .strictObject({
+          position: z.strictObject({
+            x: z.number(),
+            y: z.number(),
+          }),
+          point: z.strictObject({
+            x: z.number(),
+            y: z.number(),
+          }),
+        })
+        .parse(JSON.parse(value))
+      return {
+        position: new Vec2(position),
+        point: new Vec2(point),
+      }
+    }
+    return {
+      position: new Vec2(0, 0),
+      point: new Vec2(0, 0),
+    }
+  }, [])
+  const [cursor, setCursor] = useState<Cursor>(initial)
   useEffect(() => {
     localStorage.setItem('cursor', JSON.stringify(cursor))
   }, [cursor])
   return [cursor, setCursor]
 }
 
-const INITIAL_WORLD = (() => {
-  const value = localStorage.getItem('world')
-  if (value) {
-    return World.parse(JSON.parse(value))
-  }
-  return initWorld()
-})()
-
 function useWorld(): [World, Updater<World>] {
-  const [world, setWorld] = useImmer(INITIAL_WORLD)
+  const initial = useMemo(() => {
+    const value = localStorage.getItem('world')
+    if (value) {
+      return World.parse(JSON.parse(value))
+    }
+    return initWorld()
+  }, [])
+  const [world, setWorld] = useImmer(initial)
   useEffect(() => {
     localStorage.setItem('world', JSON.stringify(world))
   }, [world])
