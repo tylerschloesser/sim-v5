@@ -106,9 +106,20 @@ function useViewport(
   return viewport
 }
 
+function useViewBox(
+  viewport: Vec2 | null,
+): string | undefined {
+  return useMemo(
+    () =>
+      viewport
+        ? `0 0 ${viewport.x} ${viewport.y}`
+        : undefined,
+    [viewport],
+  )
+}
+
 export function App() {
   const svg = useRef<SVGSVGElement>(null)
-
   const viewport = useViewport(svg)
   const scale = useScale(viewport)
   const [world] = useWorld()
@@ -118,14 +129,11 @@ export function App() {
   const path = usePath(cursor, velocity, world)
   const player = usePlayer(cursor, path)
   const camera = useCamera(cursor, path)
-  usePreventDefaults(svg)
-
+  const viewBox = useViewBox(viewport)
   const onPointerDown = useOnPointerDown(setDrag)
   const onPointerMove = useOnPointerMove(setDrag)
 
-  const viewBox = viewport
-    ? `0 0 ${viewport.x} ${viewport.y}`
-    : undefined
+  usePreventDefaults(svg)
 
   return (
     <svg
