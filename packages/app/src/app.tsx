@@ -132,6 +132,11 @@ export function App() {
   const viewBox = useViewBox(viewport)
   const onPointerDown = useOnPointerDown(setDrag)
   const onPointerMove = useOnPointerMove(setDrag)
+  const onPointerUp = useOnPointerUp(
+    setDrag,
+    setCursor,
+    path,
+  )
 
   usePreventDefaults(svg)
 
@@ -143,20 +148,7 @@ export function App() {
       data-scale={scale}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
-      onPointerUp={(ev) => {
-        const last = path.at(-1)
-        if (last) {
-          setCursor(() => ({
-            position: last.b,
-            point: last.point,
-          }))
-        }
-        setDrag((prev) => {
-          if (prev?.pointerId === ev.pointerId) {
-            return null
-          }
-        })
-      }}
+      onPointerUp={onPointerUp}
       onPointerLeave={(ev) => {
         setDrag((prev) => {
           if (prev?.pointerId === ev.pointerId) {
@@ -530,7 +522,7 @@ function RenderDrag({ drag, viewport }: RenderDragProps) {
 
 function useOnPointerDown(setDrag: Updater<Drag | null>) {
   return useCallback<
-    Required<React.DOMAttributes<Element>>['onPointerUp']
+    Required<React.DOMAttributes<Element>>['onPointerDown']
   >((ev) => {
     setDrag((prev) => {
       if (prev === null) {
@@ -564,6 +556,32 @@ function useOnPointerMove(setDrag: Updater<Drag | null>) {
       })
     })
   }, [])
+}
+
+function useOnPointerUp(
+  setDrag: Updater<Drag | null>,
+  setCursor: React.Dispatch<React.SetStateAction<Cursor>>,
+  path: Path,
+) {
+  return useCallback<
+    Required<React.DOMAttributes<Element>>['onPointerUp']
+  >(
+    (ev) => {
+      const last = path.at(-1)
+      if (last) {
+        setCursor(() => ({
+          position: last.b,
+          point: last.point,
+        }))
+      }
+      setDrag((prev) => {
+        if (prev?.pointerId === ev.pointerId) {
+          return null
+        }
+      })
+    },
+    [path],
+  )
 }
 
 interface RenderPlayerProps {
