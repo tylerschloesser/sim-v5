@@ -858,16 +858,30 @@ function RenderPath({ scale, path }: RenderPathProps) {
             y2={b.y * scale}
           />
         ))}
-        {path.map(({ point }, i) => (
-          <rect
-            stroke={i % 2 === 0 ? 'red' : 'cyan'}
-            opacity={0.5}
-            key={i}
-            x={point.x * scale + 1}
-            y={point.y * scale + 1}
-            width={scale - 2}
-            height={scale - 2}
-          />
+        {path.map(({ point, blockedBy }, i) => (
+          <>
+            <rect
+              stroke={i % 2 === 0 ? 'red' : 'cyan'}
+              opacity={0.5}
+              key={i}
+              x={point.x * scale + 1}
+              y={point.y * scale + 1}
+              width={scale - 2}
+              height={scale - 2}
+            />
+            {blockedBy && (
+              <>
+                <rect
+                  stroke={'purple'}
+                  key={i}
+                  x={blockedBy.x * scale + 1}
+                  y={blockedBy.y * scale + 1}
+                  width={scale - 2}
+                  height={scale - 2}
+                />
+              </>
+            )}
+          </>
         ))}
       </g>
     )
