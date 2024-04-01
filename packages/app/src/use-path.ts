@@ -56,7 +56,6 @@ export function usePath(
 
       if (isCellBlocked(cell)) {
         blockedBy = point
-
         if (x % 1 === 0 && y % 1 === 0) {
           //
           // we are in the corner, first attempt to move along the
@@ -69,6 +68,8 @@ export function usePath(
               : ['y', 'x']
 
           let found = false
+
+          let firstBlockedBy: Point | undefined = undefined
 
           for (const axis of order) {
             if (axis === 'x') {
@@ -83,6 +84,8 @@ export function usePath(
                 v = new Vec2(v.x, 0)
                 found = true
                 break
+              } else if (!firstBlockedBy) {
+                firstBlockedBy = adjacentPoint
               }
             } else {
               invariant(axis === 'y')
@@ -97,11 +100,28 @@ export function usePath(
                 v = new Vec2(0, v.y)
                 found = true
                 break
+              } else if (!firstBlockedBy) {
+                firstBlockedBy = adjacentPoint
               }
             }
           }
           if (!found) {
             v = null
+            if (path.length === 0) {
+              //
+              // if path is currently empty, we are in a corner, in which case
+              // we consider the first block we hit to be the blocker
+              //
+              invariant(firstBlockedBy)
+              path.push({
+                a: u,
+                b: u,
+                t: PATH_TIME,
+                v: new Vec2(0, 0),
+                point: cursor.point,
+                blockedBy: firstBlockedBy,
+              })
+            }
           }
         } else if (x % 1 === 0) {
           //
