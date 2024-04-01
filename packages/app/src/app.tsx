@@ -1,5 +1,3 @@
-import { times } from 'lodash-es'
-import Prando from 'prando'
 import {
   useCallback,
   useEffect,
@@ -23,50 +21,14 @@ import {
   Cursor,
   Drag,
   Path,
-  Point,
   World,
 } from './types.js'
 import { useCamera } from './use-camera.js'
 import { usePath } from './use-path.js'
 import { usePlayer } from './use-player.js'
 import { useVelocity } from './use-velocity.js'
-import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
-import { getCellColor, initWorld } from './world.js'
-
-type Action = 'clear-stone'
-
-function useDebug() {
-  const initial = useMemo(() => {
-    const value = localStorage.getItem('debug')
-    if (value) {
-      return z.boolean().parse(JSON.parse(value))
-    }
-    return false
-  }, [])
-  const [debug, setDebug] = useState<boolean>(initial)
-  useEffect(() => {
-    const controller = new AbortController()
-    const { signal } = controller
-    window.addEventListener(
-      'keyup',
-      (ev) => {
-        if (ev.key === ' ') {
-          setDebug((prev) => !prev)
-        }
-      },
-      { signal },
-    )
-    return () => {
-      controller.abort()
-    }
-  }, [])
-  useEffect(() => {
-    console.log('debug:', debug)
-    localStorage.setItem('debug', JSON.stringify(debug))
-  }, [debug])
-  return debug
-}
+import { initWorld } from './world.js'
 
 function useCursor(): [
   Cursor,
@@ -123,23 +85,13 @@ function useScale(viewport: Vec2 | null): number | null {
   return useMemo(() => getScale(viewport), [viewport])
 }
 
-function useAction(): [
-  Action | null,
-  React.Dispatch<React.SetStateAction<Action | null>>,
-] {
-  const [action, setAction] = useState<Action | null>(null)
-  return [action, setAction]
-}
-
 export function App() {
   // prettier-ignore
   const [viewport, setViewport] = useState<Vec2 | null>(null)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const debug = useDebug()
   const scale = useScale(viewport)
   const svg = useRef<SVGSVGElement>(null)
-  const [world, setWorld] = useWorld()
+  const [world] = useWorld()
   const [drag, setDrag] = useImmer<Drag | null>(null)
   const velocity = useVelocity(scale, drag)
   const [cursor, setCursor] = useCursor()
@@ -151,8 +103,6 @@ export function App() {
 
   const onPointerDown = useOnPointerDown(setDrag)
   const onPointerMove = useOnPointerMove(setDrag)
-
-  const [action, setAction] = useAction()
 
   const viewBox = viewport
     ? `0 0 ${viewport.x} ${viewport.y}`
@@ -215,12 +165,6 @@ export function App() {
             })}
           >
             <RenderCells scale={scale} world={world} />
-            <RenderAction
-              scale={scale}
-              world={world}
-              cursor={cursor}
-              action={action}
-            />
             <RenderPath scale={scale} path={path} />
             <RenderCursor
               scale={scale}
@@ -235,213 +179,9 @@ export function App() {
             velocity={velocity}
             scale={scale}
           />
-          <RenderActionButton
-            viewport={viewport}
-            cursor={cursor}
-            world={world}
-            setWorld={setWorld}
-            action={action}
-            setAction={setAction}
-          />
         </>
       )}
     </svg>
-  )
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function clearStone(point: Point) {
-  return function update(draft: World): void {
-    const cellId = toCellId(point)
-    const cell = draft.cells[cellId]
-    invariant(cell?.type === CellType.enum.Stone)
-    cell.type = CellType.enum.Grass
-    cell.color = getCellColor(cell.type)
-
-    for (const [dx, dy] of new Array<[number, number]>(
-      [-1, 0],
-      [1, 0],
-      [0, -1],
-      [0, 1],
-    )) {
-      const adjacentId = `${point.x + dx}.${point.y + dy}`
-      const adjacent = draft.cells[adjacentId]
-      if (!adjacent) {
-        const type = CellType.enum.Stone
-        const color = getCellColor(type)
-        draft.cells[adjacentId] = { type, color }
-      }
-    }
-  }
-}
-
-interface RenderActionProps {
-  scale: number
-  cursor: Cursor
-  world: World
-  action: Action | null
-}
-
-function RenderAction({
-  scale,
-  cursor,
-  world,
-  action,
-}: RenderActionProps) {
-  const d = 5
-  const rng = useMemo(() => new Prando(0), [])
-
-  const cellId = toCellId(cursor.point)
-  const cell = world.cells[cellId]
-  invariant(cell)
-
-  const [pixels, setPixels] = useState(
-    new Array<string>(d ** 2).fill('transparent'),
-  )
-
-  const ref = useRef<SVGGElement>(null)
-  useEffect(() => {
-    if (!action) return
-    invariant(ref.current)
-    ref.current.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 250,
-    })
-  }, [action])
-
-  const interval = useRef<number | null>(null)
-  useEffect(() => {
-    if (!action) return
-    invariant(interval.current === null)
-    let count = 0
-    interval.current = self.setInterval(() => {
-      setPixels(() => {
-        return new Array(d ** 2)
-          .fill(null)
-          .map(
-            () =>
-              `hsla(0, 0%, 0%, ${rng.next() * Math.min((count + 1) * 0.1, 1)})`,
-          )
-      })
-      count += 1
-    }, 250)
-    return () => {
-      self.clearInterval(interval.current ?? undefined)
-      interval.current = null
-    }
-  }, [action])
-
-  if (!action) {
-    return null
-  }
-
-  return (
-    <g
-      transform={`translate(${cursor.point.x * scale} ${cursor.point.y * scale})`}
-    >
-      <g
-        ref={ref}
-        style={{
-          transformOrigin: `${scale / 2}px ${scale / 2}px`,
-        }}
-      >
-        <rect
-          width={scale}
-          height={scale}
-          fill={cell.color}
-        />
-        {times(d ** 2).map((i) => (
-          <rect
-            key={i}
-            x={Math.floor(i / d) * (scale / d)}
-            y={(i % d) * (scale / d)}
-            width={scale / d}
-            height={scale / d}
-            fill={pixels[i]}
-          />
-        ))}
-      </g>
-    </g>
-  )
-}
-
-interface RenderActionButtonProps {
-  viewport: Vec2
-  cursor: Cursor
-  world: World
-  setWorld: Updater<World>
-  action: Action | null
-  setAction: React.Dispatch<
-    React.SetStateAction<Action | null>
-  >
-}
-
-function RenderActionButton({
-  viewport,
-  cursor,
-  world,
-  action,
-  setAction,
-  setWorld,
-}: RenderActionButtonProps) {
-  const vmin = Math.min(viewport.x, viewport.y)
-
-  const r = vmin / 8
-
-  const cellId = toCellId(cursor.point)
-  const cell = world.cells[cellId]
-  invariant(cell)
-
-  const disabled = cell.type !== CellType.enum.Stone
-
-  const fill = disabled
-    ? 'hsla(0, 100%, 50%, .5)'
-    : action !== null
-      ? 'hsla(0, 50%, 50%, 1)'
-      : 'hsla(0, 100%, 50%, 1)'
-
-  const stop = useCallback(() => {
-    if (disabled) return
-    setAction(null)
-  }, [disabled])
-
-  const start: React.PointerEventHandler = useCallback(
-    (ev) => {
-      if (disabled) return
-      ev.stopPropagation()
-      setAction('clear-stone')
-    },
-    [disabled],
-  )
-
-  useEffect(() => {
-    if (disabled) {
-      setAction(null)
-    }
-  }, [disabled])
-
-  const timeout = useRef<number | null>(null)
-  useEffect(() => {
-    if (!action) return
-    timeout.current = self.setTimeout(() => {
-      setWorld(clearStone(cursor.point))
-      timeout.current = null
-    }, 1000)
-    return () => {
-      self.clearTimeout(timeout.current ?? undefined)
-      timeout.current = null
-    }
-  }, [action, cursor.point])
-
-  return (
-    <circle
-      onPointerDown={start}
-      onPointerUp={stop}
-      onPointerLeave={stop}
-      cx={viewport.x / 2}
-      cy={viewport.y - r * 2}
-      r={r}
-      fill={fill}
-    />
   )
 }
 
