@@ -53,6 +53,11 @@ export function usePath(
 
       if (isCellBlocked(cell)) {
         if (x % 1 === 0 && y % 1 === 0) {
+          //
+          // we are in the corner, first attempt to move along the
+          // velocity axis with the larger magnitude, then try the
+          // other axis
+          //
           const order: ['x', 'y'] | ['y', 'x'] =
             Math.abs(v.x) > Math.abs(v.y)
               ? ['x', 'y']
