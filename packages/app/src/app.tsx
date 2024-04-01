@@ -858,7 +858,7 @@ function RenderPath({ scale, path }: RenderPathProps) {
             y2={b.y * scale}
           />
         ))}
-        {path.map(({ point, blockedBy }, i) => (
+        {path.map(({ point, blockedBy, t }, i) => (
           <>
             <rect
               stroke={i % 2 === 0 ? 'red' : 'cyan'}
@@ -870,16 +870,26 @@ function RenderPath({ scale, path }: RenderPathProps) {
               height={scale - 2}
             />
             {blockedBy && (
-              <>
+              <g
+                transform={svgTranslate(
+                  blockedBy.mul(scale).add(1),
+                )}
+              >
                 <rect
                   stroke={'purple'}
                   key={i}
-                  x={blockedBy.x * scale + 1}
-                  y={blockedBy.y * scale + 1}
                   width={scale - 2}
                   height={scale - 2}
                 />
-              </>
+                <text
+                  fontSize={16}
+                  fontFamily="system-ui"
+                  fill="white"
+                  transform="scale(1 -1)"
+                >
+                  {t.toFixed(2)}
+                </text>
+              </g>
             )}
           </>
         ))}
