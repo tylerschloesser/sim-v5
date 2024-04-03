@@ -76,4 +76,8 @@ export class Vec2 {
   cross(v: Vec2): number {
     return this.x * v.y - this.y * v.x
   }
+
+  map(fn: (v: Vec2) => { x: number; y: number }): Vec2 {
+    return new Vec2(fn(this))
+  }
 }
