@@ -15,7 +15,6 @@ import {
   SHOW_PATH,
   getScale,
 } from './const.js'
-import { radiansToDegrees } from './math.js'
 import {
   CellType,
   Cursor,
@@ -207,7 +206,11 @@ export function App() {
               cursor={cursor}
               path={path}
             />
-            <RenderPlayer scale={scale} player={player} />
+            <RenderPlayer
+              scale={scale}
+              player={player}
+              input={input}
+            />
           </g>
 
           <RenderDrag drag={drag} viewport={viewport} />
@@ -467,9 +470,7 @@ function RenderInput({ input, scale }: RenderInputProps) {
     return null
   }
 
-  const { x: vx, y: vy } = input.v
-  // multiply by -1 because atan2 measures counter-clockwise
-  const angle = radiansToDegrees(Math.atan2(vy, vx)) * -1
+  const angle = input.v.angle()
 
   return (
     <>
@@ -605,10 +606,12 @@ function useOnPointerUp(
 interface RenderPlayerProps {
   scale: number
   player: Vec2
+  input: Input | null
 }
 function RenderPlayer({
   scale,
   player,
+  input,
 }: RenderPlayerProps) {
   return (
     <g>
@@ -619,6 +622,7 @@ function RenderPlayer({
         r={scale / 2}
         fill="blue"
       />
+      {input && null}
     </g>
   )
 }

@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { mod } from './math.js'
+import { mod, radiansToDegrees } from './math.js'
 
 export class Vec2 {
   x: number
@@ -79,6 +79,11 @@ export class Vec2 {
 
   map(fn: (v: Vec2) => { x: number; y: number }): Vec2 {
     return new Vec2(fn(this))
+  }
+
+  angle(): number {
+    // multiply by -1 because atan2 measures counter-clockwise
+    return radiansToDegrees(Math.atan2(this.y, this.x)) * -1
   }
 
   static ZERO = new Vec2(0, 0)
