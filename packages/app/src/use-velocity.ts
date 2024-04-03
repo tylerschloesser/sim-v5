@@ -3,8 +3,6 @@ import { MAX_SPEED, smooth } from './const.js'
 import { Drag } from './types.js'
 import { Vec2 } from './vec2.js'
 
-const ZERO = new Vec2(0, 0)
-
 export function useVelocity(
   scale: number | null,
   drag: Drag | null,
@@ -15,7 +13,7 @@ export function useVelocity(
       drag === null ||
       drag.end === null
     ) {
-      return ZERO
+      return Vec2.ZERO
     }
     const {
       start: { position: start },
@@ -26,7 +24,7 @@ export function useVelocity(
     const threshold = scale * 1.5
 
     if (dir.len() <= threshold) {
-      return ZERO
+      return Vec2.ZERO
     }
     dir = dir
       .norm()

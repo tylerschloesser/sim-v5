@@ -80,4 +80,6 @@ export class Vec2 {
   map(fn: (v: Vec2) => { x: number; y: number }): Vec2 {
     return new Vec2(fn(this))
   }
+
+  static ZERO = new Vec2(0, 0)
 }
