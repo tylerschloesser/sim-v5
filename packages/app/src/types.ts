@@ -24,6 +24,8 @@ export interface DragEvent {
 
 export interface Drag {
   pointerId: PointerId
+  start: DragEvent
+  end: DragEvent | null
   events: DragEvent[]
 }
 

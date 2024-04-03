@@ -20,6 +20,7 @@ import {
   CellType,
   Cursor,
   Drag,
+  DragEvent,
   Path,
   World,
 } from './types.js'
@@ -508,11 +509,13 @@ interface RenderDragProps {
   viewport: Vec2
 }
 function RenderDrag({ drag, viewport }: RenderDragProps) {
-  const start = drag?.events.at(0)?.position
-  let end = drag?.events.at(-1)?.position
-  if (end && start && end.equals(start)) {
-    end = undefined
+  if (drag === null || drag.end === null) {
+    return null
   }
+  const {
+    start: { position: start },
+    end: { position: end },
+  } = drag
   const vmin = Math.min(viewport.x, viewport.y)
   const r = vmin / 20
   if (!start) return null
@@ -540,14 +543,15 @@ function useOnPointerDown(setDrag: Updater<Drag | null>) {
   >((ev) => {
     setDrag((prev) => {
       if (prev === null) {
+        const start: DragEvent = {
+          time: ev.timeStamp,
+          position: new Vec2(ev.clientX, ev.clientY),
+        }
         const next: Drag = {
           pointerId: ev.pointerId,
-          events: [
-            {
-              time: ev.timeStamp,
-              position: new Vec2(ev.clientX, ev.clientY),
-            },
-          ],
+          start,
+          end: null,
+          events: [start],
         }
         return next
       }
@@ -564,10 +568,12 @@ function useOnPointerMove(setDrag: Updater<Drag | null>) {
       if (!prev || prev.pointerId !== ev.pointerId) {
         return
       }
-      prev.events.push({
+      const end: DragEvent = {
         time: ev.timeStamp,
         position: new Vec2(ev.clientX, ev.clientY),
-      })
+      }
+      prev.end = end
+      prev.events.push(end)
     })
   }, [])
 }

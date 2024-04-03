@@ -10,20 +10,19 @@ export function useVelocity(
   drag: Drag | null,
 ): Vec2 {
   return useMemo<Vec2>(() => {
-    if (scale === null) {
+    if (
+      scale === null ||
+      drag === null ||
+      drag.end === null
+    ) {
       return ZERO
     }
-    const start = drag?.events.at(0)?.position
-    let end = drag?.events.at(-1)?.position
-    if (end && start && end.equals(start)) {
-      end = undefined
-    }
-    let dir = start && end ? end.sub(start) : null
+    const {
+      start: { position: start },
+      end: { position: end },
+    } = drag
 
-    if (dir === null) {
-      return ZERO
-    }
-
+    let dir = end.sub(start)
     const threshold = scale * 1.5
 
     if (dir.len() <= threshold) {
