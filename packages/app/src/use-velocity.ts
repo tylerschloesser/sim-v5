@@ -24,7 +24,7 @@ export function useVelocity(
       return ZERO
     }
 
-    const threshold = scale
+    const threshold = scale * 1.5
 
     if (dir.len() <= threshold) {
       return ZERO
