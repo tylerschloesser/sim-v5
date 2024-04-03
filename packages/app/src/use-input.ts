@@ -19,11 +19,19 @@ export function useInput(
       end: { position: end },
     } = drag
 
-    let dir = end.sub(start)
+    let dir = end
+      .sub(start)
+      // invert y direction (DOM y is down, ours is up)
+      .map(({ x, y }) => ({ x, y: -y }))
+
     const threshold = scale * 1.5
 
     if (dir.len() <= threshold) {
-      return { type: InputType.Action }
+      return {
+        type: InputType.Action,
+        // length between 0 and 1 (inclusive)
+        v: dir.norm().mul(dir.len() / threshold),
+      }
     }
 
     dir = dir
@@ -31,8 +39,6 @@ export function useInput(
       // shorten the vector a bit, so that we start closer to zero
       // (but not quite zero)
       .mul(dir.len() - threshold / 2)
-      // invert y direction (DOM y is down, ours is up)
-      .map(({ x, y }) => ({ x, y: -y }))
 
     const speed = Math.min(
       smooth(dir.div(scale).len(), 1.75),

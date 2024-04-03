@@ -458,15 +458,12 @@ function SmoothRect({
   )
 }
 
-interface RenderVelocityProps {
+interface RenderInputProps {
   input: Input | null
   scale: number
 }
-function RenderInput({
-  input,
-  scale,
-}: RenderVelocityProps) {
-  if (input === null || input.type !== InputType.Move) {
+function RenderInput({ input, scale }: RenderInputProps) {
+  if (input === null) {
     return null
   }
 
@@ -476,16 +473,18 @@ function RenderInput({
 
   return (
     <>
-      <text
-        fontSize={16}
-        fontFamily="system-ui"
-        fill="white"
-        x="100%"
-        y="16"
-        textAnchor="end"
-      >
-        {`speed: ${input.v.len().toFixed(2)}`}
-      </text>
+      {input.type === InputType.Move && (
+        <text
+          fontSize={16}
+          fontFamily="system-ui"
+          fill="white"
+          x="100%"
+          y="16"
+          textAnchor="end"
+        >
+          {`speed: ${input.v.len().toFixed(2)}`}
+        </text>
+      )}
       <g
         stroke="red"
         fill="transparent"

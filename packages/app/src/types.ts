@@ -57,6 +57,7 @@ export interface MoveInput {
 
 export interface ActionInput {
   type: InputType.Action
+  v: Vec2
 }
 
 export type Input = MoveInput | ActionInput
