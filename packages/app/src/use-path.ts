@@ -9,6 +9,8 @@ import {
   World,
   CellType,
   Point,
+  Input,
+  InputType,
 } from './types.js'
 import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
@@ -25,16 +27,17 @@ function isCellBlocked(cell: Cell | undefined): boolean {
 
 export function usePath(
   cursor: Cursor,
-  velocity: Vec2,
+  input: Input | null,
   world: World,
 ): Path {
   return useMemo(() => {
-    if (velocity.len() === 0) {
+    if (input?.type !== InputType.Move) {
       return []
     }
+    invariant(input.v.len() > 0)
 
-    const stepX = Math.sign(velocity.x)
-    const stepY = Math.sign(velocity.y)
+    const stepX = Math.sign(input.v.x)
+    const stepY = Math.sign(input.v.y)
     let { x, y } = cursor.position
     const path: Path = []
     let u = cursor.position
@@ -50,7 +53,7 @@ export function usePath(
       const cellId = toCellId(point)
       const cell = world.cells[cellId]
 
-      let v: Vec2 | null = velocity
+      let v: Vec2 | null = input.v
 
       let blockedBy: Point | undefined = undefined
 
@@ -223,5 +226,5 @@ export function usePath(
     }
 
     return path
-  }, [cursor, velocity, world])
+  }, [cursor, input, world])
 }

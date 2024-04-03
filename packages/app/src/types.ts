@@ -44,3 +44,19 @@ export type Path = Array<{
   point: Point
   blockedBy?: Point
 }>
+
+export enum InputType {
+  Move = 'move',
+  Action = 'action',
+}
+
+export interface MoveInput {
+  type: InputType.Move
+  v: Vec2
+}
+
+export interface ActionInput {
+  type: InputType.Action
+}
+
+export type Input = MoveInput | ActionInput

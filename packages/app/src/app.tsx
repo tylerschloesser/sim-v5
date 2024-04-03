@@ -21,13 +21,15 @@ import {
   Cursor,
   Drag,
   DragEvent,
+  Input,
+  InputType,
   Path,
   World,
 } from './types.js'
 import { useCamera } from './use-camera.js'
+import { useInput } from './use-input.js'
 import { usePath } from './use-path.js'
 import { usePlayer } from './use-player.js'
-import { useVelocity } from './use-velocity.js'
 import { toCellId } from './util.js'
 import { Vec2 } from './vec2.js'
 import { initWorld } from './world.js'
@@ -134,9 +136,9 @@ export function App() {
   const scale = useScale(viewport)
   const [world] = useWorld()
   const [drag, setDrag] = useImmer<Drag | null>(null)
-  const velocity = useVelocity(scale, drag)
+  const input = useInput(scale, drag)
   const [cursor, setCursor] = useCursor()
-  const path = usePath(cursor, velocity, world)
+  const path = usePath(cursor, input, world)
   const player = usePlayer(cursor, path)
   const camera = useCamera(cursor, path)
   const viewBox = useViewBox(viewport)
@@ -209,10 +211,7 @@ export function App() {
           </g>
 
           <RenderDrag drag={drag} viewport={viewport} />
-          <RenderVelocity
-            velocity={velocity}
-            scale={scale}
-          />
+          <RenderInput input={input} scale={scale} />
         </>
       )}
     </svg>
@@ -460,18 +459,18 @@ function SmoothRect({
 }
 
 interface RenderVelocityProps {
-  velocity: Vec2
+  input: Input | null
   scale: number
 }
-function RenderVelocity({
-  velocity,
+function RenderInput({
+  input,
   scale,
 }: RenderVelocityProps) {
-  if (velocity.len() === 0) {
+  if (input === null || input.type !== InputType.Move) {
     return null
   }
 
-  const { x: vx, y: vy } = velocity
+  const { x: vx, y: vy } = input.v
   // multiply by -1 because atan2 measures counter-clockwise
   const angle = radiansToDegrees(Math.atan2(vy, vx)) * -1
 
@@ -485,7 +484,7 @@ function RenderVelocity({
         y="16"
         textAnchor="end"
       >
-        {`speed: ${velocity.len().toFixed(2)}`}
+        {`speed: ${input.v.len().toFixed(2)}`}
       </text>
       <g
         stroke="red"

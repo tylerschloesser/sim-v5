@@ -1,19 +1,18 @@
 import { useMemo } from 'react'
 import { MAX_SPEED, smooth } from './const.js'
-import { Drag } from './types.js'
-import { Vec2 } from './vec2.js'
+import { Drag, Input, InputType } from './types.js'
 
-export function useVelocity(
+export function useInput(
   scale: number | null,
   drag: Drag | null,
-): Vec2 {
-  return useMemo<Vec2>(() => {
+): Input | null {
+  return useMemo<Input | null>(() => {
     if (
       scale === null ||
       drag === null ||
       drag.end === null
     ) {
-      return Vec2.ZERO
+      return null
     }
     const {
       start: { position: start },
@@ -24,8 +23,9 @@ export function useVelocity(
     const threshold = scale * 1.5
 
     if (dir.len() <= threshold) {
-      return Vec2.ZERO
+      return { type: InputType.Action }
     }
+
     dir = dir
       .norm()
       // shorten the vector a bit, so that we start closer to zero
@@ -39,6 +39,9 @@ export function useVelocity(
       MAX_SPEED,
     )
 
-    return dir.norm().mul(speed)
+    return {
+      type: InputType.Move,
+      v: dir.norm().mul(speed),
+    }
   }, [drag, scale])
 }
