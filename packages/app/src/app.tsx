@@ -15,6 +15,7 @@ import {
   SHOW_PATH,
   getScale,
 } from './const.js'
+import { degreesToRadians } from './math.js'
 import {
   CellType,
   Cursor,
@@ -624,6 +625,15 @@ function RenderPlayer({
   return (
     <g transform={svgTranslate(player.mul(scale))}>
       <circle x={0} y={0} r={playerR} fill="blue" />
+      {input?.type === InputType.Action && (
+        <path
+          transform={`rotate(${Math.floor((inputAngle + 45) / 90) * 90 + 45 + 180})`}
+          fill="pink"
+          d={`M0,0 L-${playerR},0 a ${playerR},${playerR} 0 0,0 ${
+            Math.cos(0) * playerR
+          } ${Math.sin(Math.PI / 2) * playerR} z`}
+        />
+      )}
       <circle
         opacity={input?.type === InputType.Action ? 1 : 0}
         fill="red"

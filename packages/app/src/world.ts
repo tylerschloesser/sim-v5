@@ -18,6 +18,12 @@ export function getCellColor(type: CellType): string {
       const lightness = 20 + rng.next() * 10
       return `hsl(${hue}, ${saturation.toFixed(2)}%, ${lightness.toFixed(2)}%)`
     }
+    case CellType.enum.Tree: {
+      const hue = 25
+      const saturation = 45 + rng.next() * 10
+      const lightness = 25 + rng.next() * 10
+      return `hsl(${hue}, ${saturation.toFixed(2)}%, ${lightness.toFixed(2)}%)`
+    }
   }
 }
 
@@ -34,7 +40,14 @@ export function initWorld(): World {
       if (dist === 7) {
         type = CellType.enum.Stone
       } else if (dist < 7) {
-        type = CellType.enum.Grass
+        if (dist > 3) {
+          type =
+            rng.next() < 0.33
+              ? CellType.enum.Tree
+              : CellType.enum.Grass
+        } else {
+          type = CellType.enum.Grass
+        }
       }
       if (type) {
         const color = getCellColor(type)

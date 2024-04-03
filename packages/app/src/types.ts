@@ -1,7 +1,7 @@
 import * as z from 'zod'
 import { Vec2 } from './vec2.js'
 
-export const CellType = z.enum(['Stone', 'Grass'])
+export const CellType = z.enum(['Stone', 'Grass', 'Tree'])
 export type CellType = z.infer<typeof CellType>
 
 export const Cell = z.strictObject({
