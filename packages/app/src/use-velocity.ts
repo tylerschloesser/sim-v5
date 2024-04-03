@@ -32,11 +32,8 @@ export function useVelocity(
       // shorten the vector a bit, so that we start closer to zero
       // (but not quite zero)
       .mul(dir.len() - scale / 2)
-      .map(({ x, y }) => ({
-        x,
-        // invert y direction
-        y: -y,
-      }))
+      // invert y direction (DOM y is down, ours is up)
+      .map(({ x, y }) => ({ x, y: -y }))
 
     const speed = Math.min(
       smooth(dir.div(scale).len(), 1.75),
