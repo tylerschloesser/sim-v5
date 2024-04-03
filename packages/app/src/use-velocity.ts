@@ -24,14 +24,16 @@ export function useVelocity(
       return ZERO
     }
 
-    if (dir.len() <= scale) {
+    const threshold = scale
+
+    if (dir.len() <= threshold) {
       return ZERO
     }
     dir = dir
       .norm()
       // shorten the vector a bit, so that we start closer to zero
       // (but not quite zero)
-      .mul(dir.len() - scale / 2)
+      .mul(dir.len() - threshold / 2)
       // invert y direction (DOM y is down, ours is up)
       .map(({ x, y }) => ({ x, y: -y }))
 
