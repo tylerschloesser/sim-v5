@@ -17,9 +17,14 @@ export type World = z.infer<typeof World>
 
 export type PointerId = number
 
+export interface DragEvent {
+  time: number
+  position: Vec2
+}
+
 export interface Drag {
   pointerId: PointerId
-  events: { time: number; position: Vec2 }[]
+  events: DragEvent[]
 }
 
 export type Point = Vec2
