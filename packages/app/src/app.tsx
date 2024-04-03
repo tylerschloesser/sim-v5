@@ -613,16 +613,25 @@ function RenderPlayer({
   player,
   input,
 }: RenderPlayerProps) {
+  const playerR = scale / 2
   return (
-    <g>
-      <circle
-        transform={svgTranslate(player.mul(scale))}
-        x={0}
-        y={0}
-        r={scale / 2}
-        fill="blue"
-      />
-      {input && null}
+    <g transform={svgTranslate(player.mul(scale))}>
+      <circle x={0} y={0} r={playerR} fill="blue" />
+      {(() => {
+        if (input?.type !== InputType.Action) {
+          return null
+        }
+        const r = scale / 10
+        const angle = input.v.angle() * -1
+        return (
+          <circle
+            cx={0}
+            cy={0}
+            transform={`rotate(${angle}) translate(${playerR * input.v.len()} 0)`}
+            r={r}
+          />
+        )
+      })()}
     </g>
   )
 }
