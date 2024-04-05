@@ -15,7 +15,6 @@ import {
   SHOW_PATH,
   getScale,
 } from './const.js'
-import { degreesToRadians } from './math.js'
 import {
   CellType,
   Cursor,
