@@ -19,10 +19,13 @@ function isCellBlocked(cell: Cell | undefined): boolean {
   if (cell === undefined) {
     return true
   }
-  if (cell.type === CellType.enum.Stone) {
-    return true
+  switch (cell.type) {
+    case CellType.enum.Stone:
+    case CellType.enum.Tree:
+      return true
+    case CellType.enum.Grass:
+      return false
   }
-  return false
 }
 
 export function usePath(
